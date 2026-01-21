@@ -1,7 +1,5 @@
 # Agent Skills
 
----
-
 Official AI Agent skills from the Chroma team for building with Chroma.
 
 ## Installation
