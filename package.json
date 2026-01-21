@@ -1,0 +1,29 @@
+{
+  "name": "agent-skills",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "bun run scripts/build-skills.ts",
+    "new": "bun run scripts/new-template.ts",
+    "validate": "bun run scripts/validate-typescript.ts && bun run scripts/validate-python.ts",
+    "validate:typescript": "bun run scripts/validate-typescript.ts",
+    "validate:python": "bun run scripts/validate-python.ts"
+  },
+  "dependencies": {
+    "@chroma-core/chroma-bm25": "^0.1.10",
+    "@chroma-core/chroma-cloud-qwen": "^0.1.10",
+    "@chroma-core/chroma-cloud-splade": "^0.1.10",
+    "@chroma-core/default-embed": "^0.1.9",
+    "@chroma-core/openai": "^0.1.9",
+    "@types/node": "^25.0.9",
+    "chromadb": "^3.2.2",
+    "chromadb-default-embed": "^2.14.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.11",
+    "@google/generative-ai": "^0.24.1",
+    "@xenova/transformers": "^2.17.2",
+    "ollama": "^0.6.3",
+    "openai": "^6.16.0",
+    "typescript": "^5.7.3"
+  }
+}

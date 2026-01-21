@@ -1,0 +1,24 @@
+repos:
+  - repo: local
+    hooks:
+      - id: validate-typescript
+        name: Validate TypeScript
+        entry: bun run scripts/validate-typescript.ts
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+      - id: validate-python
+        name: Validate Python
+        entry: bun run scripts/validate-python.ts
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+      - id: build-skills
+        name: Build Skills
+        entry: bun run scripts/build-skills.ts
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
