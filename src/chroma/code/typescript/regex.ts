@@ -1,3 +1,4 @@
+// @snippet:imports
 import { OpenAIEmbeddingFunction } from '@chroma-core/openai';
 import { CloudClient } from 'chromadb';
 
@@ -17,6 +18,7 @@ const collection = await client.getOrCreateCollection({
   name: 'exampe-collection',
   embeddingFunction: embedder,
 });
+// @end
 
 // @snippet:basic-regex
 await collection.get({
@@ -26,12 +28,11 @@ await collection.get({
 });
 // @end
 
-// @snippet:case-insensitive
-const results2 = await collection.query({
-  queryTexts: ['search query'],
+// @snippet:combined-filters
+await collection.query({
+  queryTexts: ['query1', 'query2'],
   whereDocument: {
-    $regex: 'javascript',
+    $and: [{ $contains: 'search_string_1' }, { $regex: '[a-z]+' }],
   },
-  nResults: 10,
 });
 // @end

@@ -7,6 +7,23 @@ description: Query and Get Data from Chroma Collections
 
 Query and Get Data from Chroma Collections
 
+### Imports and boilerplatte
+
+```python
+import os
+
+import chromadb
+from chromadb.api.types import Embeddings, ID, IDs, Document, Metadata, Include, EmbeddingFunction, Embeddable
+from chromadb.utils.embedding_functions import OpenAIEmbeddingFunction
+from typing import List, Optional, TypedDict, cast
+
+client = chromadb.CloudClient(
+    tenant=os.getenv("CHROMA_TENANT"),
+    database=os.getenv("CHROMA_DATABASE"),
+    api_key=os.getenv("CHROMA_API_KEY"),
+)
+```
+
 ### Example
 
 ```python
@@ -61,4 +78,51 @@ class GetResult(TypedDict):
     documents: Optional[List[Document]]
     metadatas: Optional[List[Metadata]]
     included: Include
+```
+
+### Metadata Filtering
+
+The where argument in get and query is used to filter records by their metadata. For example, in this query operation, Chroma will only query records that have the page metadata field with the value 10:
+
+```python
+collection.query(
+    query_texts=["first query", "second query"],
+    where={"page": 10}
+)
+
+# In order to filter on metadata, you must supply a where filter dictionary to the query. The dictionary must have the following structure:
+# {
+#     "metadata_field": {
+#         <Operator>: <Value>
+#     }
+# }
+
+
+# Using the $eq operator is equivalent to using the metadata field directly in your where filter.
+filter1 = {
+    "metadata_field": "search_string"
+}
+
+# is equivalent to
+
+filter2 = {
+    "metadata_field": {
+        "$eq": "search_string"
+    }
+}
+
+and_example = {
+    "$and": [
+        {
+            "metadata_field1": {
+                # <Operator>: <Value>
+            }
+        },
+        {
+            "metadata_field2": {
+                # <Operator>: <Value>
+            }
+        }
+    ]
+}
 ```

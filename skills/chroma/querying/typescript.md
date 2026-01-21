@@ -7,6 +7,15 @@ description: Query and Get Data from Chroma Collections
 
 Query and Get Data from Chroma Collections
 
+### Imports and boilerplatte
+
+```typescript
+import { ChromaClient, type IncludeEnum } from 'chromadb';
+import { DefaultEmbeddingFunction } from '@chroma-core/default-embed';
+
+const client = new ChromaClient();
+```
+
 ### Example
 
 ```typescript
@@ -72,5 +81,52 @@ type GetResult = {
   ids: string[];
   include: IncludeEnum[];
   metadatas: (Record<string, string | number | boolean> | null)[];
+};
+```
+
+### Metadata Filtering
+
+The where argument in get and query is used to filter records by their metadata. For example, in this query operation, Chroma will only query records that have the page metadata field with the value 10:
+
+```typescript
+await collection.query({
+  queryTexts: ['first query', 'second query'],
+  where: { page: 10 },
+});
+
+// In order to filter on metadata, you must supply a where filter dictionary to the query. The dictionary must have the following structure:
+// {
+//     metadata_field: {
+//         <Operator>: <Value>
+//     }
+// }
+
+// Using the $eq operator is equivalent to using the metadata field directly in your where filter.
+
+const filter1 = {
+  metadata_field: 'search_string',
+};
+
+// is equivalent to
+
+const filter2 = {
+  metadata_field: {
+    $eq: 'search_string',
+  },
+};
+
+const andExample = {
+  $and: [
+    {
+      metadata_field1: {
+        // <Operator>: <Value>
+      },
+    },
+    {
+      metadata_field2: {
+        //<Operator>: <Value>
+      },
+    },
+  ],
 };
 ```

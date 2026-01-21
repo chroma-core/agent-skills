@@ -7,6 +7,30 @@ description: Learn how to use regex filters in Chroma queries
 
 Chroma supports regex filtering on document metadata. This allows you to filter results based on pattern matching.
 
+### Imports and boilerplate
+
+```typescript
+import { OpenAIEmbeddingFunction } from '@chroma-core/openai';
+import { CloudClient } from 'chromadb';
+
+// Initialize the embedder
+const embedder = new OpenAIEmbeddingFunction({
+  modelName: 'text-embedding-3-large',
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+const client = new CloudClient({
+  apiKey: process.env.CHROMA_API_KEY,
+  tenant: process.env.CHROMA_TENANT,
+  database: process.env.CHROMA_DATABASE,
+});
+
+const collection = await client.getOrCreateCollection({
+  name: 'exampe-collection',
+  embeddingFunction: embedder,
+});
+```
+
 ### Basic Regex Filter
 
 Use the `$regex` operator to match metadata values against a regular expression:
@@ -19,16 +43,13 @@ await collection.get({
 });
 ```
 
-### Case-Insensitive Matching
-
-For case-insensitive regex matching, use the `$iregex` operator:
+### Combining with metadata filters
 
 ```typescript
-const results2 = await collection.query({
-  queryTexts: ['search query'],
+await collection.query({
+  queryTexts: ['query1', 'query2'],
   whereDocument: {
-    $regex: 'javascript',
+    $and: [{ $contains: 'search_string_1' }, { $regex: '[a-z]+' }],
   },
-  nResults: 10,
 });
 ```

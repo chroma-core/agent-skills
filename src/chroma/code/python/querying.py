@@ -64,3 +64,48 @@ class GetResult(TypedDict):
     metadatas: Optional[List[Metadata]]
     included: Include
 # @end
+
+# @snippet:metadata-filtering
+
+collection.query(
+    query_texts=["first query", "second query"],
+    where={"page": 10}
+)
+
+# In order to filter on metadata, you must supply a where filter dictionary to the query. The dictionary must have the following structure:
+# {
+#     "metadata_field": {
+#         <Operator>: <Value>
+#     }
+# }
+
+
+# Using the $eq operator is equivalent to using the metadata field directly in your where filter.
+filter1 = {
+    "metadata_field": "search_string"
+}
+
+# is equivalent to
+
+filter2 = {
+    "metadata_field": {
+        "$eq": "search_string"
+    }
+}
+
+and_example = {
+    "$and": [
+        {
+            "metadata_field1": {
+                # <Operator>: <Value>
+            }
+        },
+        {
+            "metadata_field2": {
+                # <Operator>: <Value>
+            }
+        }
+    ]
+}
+
+# @end

@@ -7,14 +7,16 @@ description: Learn how to use regex filters in Chroma queries
 
 Chroma supports regex filtering on document metadata. This allows you to filter results based on pattern matching.
 
+### Imports and boilerplate
+
+{{CODE:imports}}
+
 ### Basic Regex Filter
 
 Use the `$regex` operator to match metadata values against a regular expression:
 
 {{CODE:basic-regex}}
 
-### Case-Insensitive Matching
+### Combining with metadata filters
 
-For case-insensitive regex matching, use the `$iregex` operator:
-
-{{CODE:case-insensitive}}
+{{CODE:combined-filters}}
