@@ -1,4 +1,4 @@
-# @snipped:imports
+# @snippet:imports
 from chromadb import Search, K, Knn, CloudClient, Rrf
 import os
 

@@ -9,6 +9,21 @@ An expressive and flexible API for doing dense and sparse vector search on colle
 
 The Search API is meant to be used with Collection Schemas.
 
+Note that the Search() API is only available on Chroma Cloud.
+
+```python
+from chromadb import Search, K, Knn, CloudClient, Rrf
+import os
+
+client = CloudClient(
+    tenant=os.getenv("CHROMA_TENANT"),
+    database=os.getenv("CHROMA_DATABASE"),
+    api_key=os.getenv("CHROMA_API_KEY"),
+)
+
+collection = client.get_or_create_collection(name="my_collection")
+```
+
 ### Example
 
 The Key class (aliased as K for brevity) provides a fluent interface for building filter expressions. Use K to reference document fields, IDs, and metadata properties.

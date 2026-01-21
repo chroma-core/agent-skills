@@ -7,6 +7,8 @@ description: Schema() configures collections with multiple indexes
 
 Schema configures collections with single or multiple indexes
 
+Note that the Schema() API is only available on Chroma Cloud.
+
 Imports needed for the examples show in this file
 {{CODE:imports}}
 

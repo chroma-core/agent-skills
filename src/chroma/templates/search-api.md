@@ -9,6 +9,10 @@ An expressive and flexible API for doing dense and sparse vector search on colle
 
 The Search API is meant to be used with Collection Schemas.
 
+Note that the Search() API is only available on Chroma Cloud.
+
+{{CODE:imports}}
+
 ### Example
 
 The Key class (aliased as K for brevity) provides a fluent interface for building filter expressions. Use K to reference document fields, IDs, and metadata properties.
