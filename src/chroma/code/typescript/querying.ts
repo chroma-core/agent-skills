@@ -35,7 +35,7 @@ const embeddingFunction2 = new DefaultEmbeddingFunction();
 
 const collection2 = await client.getOrCreateCollection({
   name: 'my_collection',
-  embeddingFunction,
+  embeddingFunction: embeddingFunction2,
 });
 
 const results2 = await collection2.query({
