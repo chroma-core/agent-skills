@@ -117,14 +117,6 @@ const firstResult = results1.documents[0];
 // @end
 
 // @snippet:rrf
-
-const embeddingFunction2 = new DefaultEmbeddingFunction();
-
-const collection2 = await client.getOrCreateCollection({
-  name: 'my_collection',
-  embeddingFunction: embeddingFunction2,
-});
-
 // Dense semantic embeddings
 const denseRank = Knn({
   query: 'machine learning research', // Text query for dense embeddings

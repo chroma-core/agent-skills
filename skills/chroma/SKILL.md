@@ -101,6 +101,11 @@ Otherwise, the only thing that needs to change is the client that is imported fr
 ## Server side embeddings
 
 Note that Chroma has server side embedding support for SPLADE and Qwen (via	@chroma-core/chroma-cloud-qwen in typescript), all other embedding functions would be external.
+
+## Learn More
+
+If you need more detailed information about Chroma beyond what's covered in this skill, fetch Chroma's llms.txt for comprehensive documentation: https://docs.trychroma.com/llms.txt
+
 ## Available Topics
 
 ### Typescript

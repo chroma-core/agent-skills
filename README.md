@@ -41,9 +41,9 @@ $ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 Then run validation:
 
 ```sh
-$ npm run validate           # Run both TypeScript and Python validation
-$ npm run validate:typescript  # TypeScript only
-$ npm run validate:python      # Python only
+$ bun run validate             # Run both TypeScript and Python validation
+$ bun run validate:typescript  # TypeScript only
+$ bun run validate:python      # Python only
 ```
 
 ### Pre commit hook
