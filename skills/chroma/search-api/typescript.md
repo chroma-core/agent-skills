@@ -12,10 +12,14 @@ The Search API is meant to be used with Collection Schemas.
 Note that the Search() API is only available on Chroma Cloud.
 
 ```typescript
-import { ChromaClient, type IncludeEnum, Rrf, K, Knn, Search } from 'chromadb';
+import { CloudClient, type IncludeEnum, Rrf, K, Knn, Search } from 'chromadb';
 import { DefaultEmbeddingFunction } from '@chroma-core/default-embed';
 
-const client = new ChromaClient();
+const client = new CloudClient({
+  apiKey: process.env.CHROMA_API_KEY,
+  tenant: process.env.CHROMA_TENANT,
+  database: process.env.CHROMA_DATABASE,
+});
 ```
 
 ### Example
