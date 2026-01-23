@@ -9,6 +9,8 @@ Schema configures collections with single or multiple indexes
 
 Note that the Schema() API is only available on Chroma Cloud.
 
+If you use the Schema API when creating collections, you cannot pass an embedding funciton, you pass the embedding function to the a schema.indexConfig() call.
+
 Imports needed for the examples show in this file
 {{CODE:imports}}
 

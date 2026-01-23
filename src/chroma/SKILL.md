@@ -98,7 +98,11 @@ The biggest difference to the developer experience is the Schema() and Search() 
 
 Otherwise, the only thing that needs to change is the client that is imported from the Chroma package, the interface is the same.
 
-## Server side embeddings
+### Embeddings
+
+When working with embedding functions, the default embedding function is available, but it's often not the best option. Ask the user what they want. The most popular option is to use text-embedding-3-large by Openai.
+
+In typescript, you need to install a package for each embedding function, install the correct one based on what the user says. 
 
 Note that Chroma has server side embedding support for SPLADE and Qwen (via	@chroma-core/chroma-cloud-qwen in typescript), all other embedding functions would be external.
 

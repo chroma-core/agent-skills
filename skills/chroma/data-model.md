@@ -38,3 +38,5 @@ In additional to using nearest neighbor search, the text of the document itself 
 By default, the embedding of the document is a dense vector. Sparse vectors are also possible, this is done by selecting a metadata key as the location for the vector to live at time of creation of the collection.
 
 Hybrid search is also possible. This technique creates sparse and dense embeddings of the query document, finds nearest neighbors for both and then fusing the ranks on the server before sending them to the client. The ranking is based on weighting provided for each vector type.
+
+Note that when creating collections, `get_or_create_collection()` takes the collection name and the embedding_function OR schema, but not both. 
