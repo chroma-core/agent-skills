@@ -98,9 +98,13 @@ The biggest difference to the developer experience is the Schema() and Search() 
 
 Otherwise, the only thing that needs to change is the client that is imported from the Chroma package, the interface is the same.
 
+If you're using cloud, you probably want to use the Schema() and Search() APIs.
+
+Also, if the user wants to use cloud, as them what type of search they want to use. Just dense embeddings, or hybrid. If hybrid, you probably want to use SPLADE as the sparse embedding strategy.
+
 ### Embeddings
 
-When working with embedding functions, the default embedding function is available, but it's often not the best option. Ask the user what they want. The most popular option is to use text-embedding-3-large by Openai.
+When working with embedding functions, the default embedding function is available, but it's often not the best option. Ask the user what they want. The most popular option is to use text-embedding-3-large by Openai. It's on npm as @chroma-core/openai.
 
 In typescript, you need to install a package for each embedding function, install the correct one based on what the user says. 
 
