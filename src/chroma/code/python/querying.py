@@ -109,3 +109,54 @@ and_example = {
 }
 
 # @end
+
+# @snippet:get-method
+
+# Get by specific IDs
+docs = collection.get(ids=["doc1", "doc2"])
+
+# Get with pagination (default limit is 100)
+page = collection.get(limit=20, offset=0)
+
+# Get with metadata filter (no similarity ranking)
+filtered = collection.get(
+    where={"category": "blog"},
+    limit=50
+)
+
+# @end
+
+# @snippet:where-document
+
+# Find documents containing a specific string (case-sensitive)
+results = collection.query(
+    query_texts=["search query"],
+    where_document={"$contains": "important keyword"}
+)
+
+# Exclude documents containing a string
+excluded = collection.query(
+    query_texts=["search query"],
+    where_document={"$not_contains": "deprecated"}
+)
+
+# Combine multiple document filters with $and
+combined = collection.query(
+    query_texts=["search query"],
+    where_document={
+        "$and": [
+            {"$contains": "python"},
+            {"$not_contains": "legacy"}
+        ]
+    }
+)
+
+# Combine where_document with metadata filtering
+full_filter = collection.query(
+    query_texts=["search query"],
+    n_results=10,
+    where={"status": "published"},
+    where_document={"$contains": "tutorial"}
+)
+
+# @end

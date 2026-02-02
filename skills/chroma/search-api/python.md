@@ -5,11 +5,24 @@ description: An expressive and flexible API for doing dense and sparse vector se
 
 ## Search() API
 
-An expressive and flexible API for doing dense and sparse vector search on collections, as well as hybrid search.
+The Search API provides a fluent, composable interface for building complex queries. It's more expressive than the basic `query` method and supports advanced features like hybrid search with rank fusion.
 
-The Search API is meant to be used with Collection Schemas.
+**Note:** The Search API is only available on Chroma Cloud and is designed to work with Collection Schemas.
 
-Note that the Search() API is only available on Chroma Cloud.
+### When to use Search() vs query()
+
+**Use `query()` when:**
+- You need simple semantic search
+- You're using local Chroma
+- You want the most straightforward API
+
+**Use `Search()` when:**
+- You need hybrid search combining dense and sparse indexes
+- You want fine-grained control over ranking and filtering
+- You're building complex queries with multiple conditions
+- You need to select specific fields to return
+
+### Setup
 
 ```python
 from chromadb import Search, K, Knn, CloudClient, Rrf
@@ -24,9 +37,9 @@ client = CloudClient(
 collection = client.get_or_create_collection(name="my_collection")
 ```
 
-### Example
+### Filtering with Key (K)
 
-The Key class (aliased as K for brevity) provides a fluent interface for building filter expressions. Use K to reference document fields, IDs, and metadata properties.
+The `Key` class (aliased as `K` for brevity) provides a fluent interface for building filter expressions. Think of it like a query builder for metadata, document content, and IDs.
 
 ```python
 # K is an alias for Key - use K for more concise code
@@ -61,7 +74,11 @@ K.DOCUMENT.not_contains("deprecated")          # Exclude documents with text
 K.DOCUMENT.regex(r"\bAPI\b")                   # Match whole word "API" in document
 ```
 
-Ranking uses Knn
+### Ranking with Knn
+
+`Knn` (k-nearest neighbors) is how you specify which embeddings to search and how to score results. Each `Knn` finds the nearest neighbors for a given query in a specific index.
+
+The `limit` parameter controls how many candidates each `Knn` considers. A higher limit means more candidates are scored, which can improve recall but increases latency.
 
 ```python
 # Example 1: Single Knn - scores top 16 documents
@@ -102,7 +119,9 @@ Knn(
 Knn(query="machine learning", key="sparse_embedding")
 ```
 
-A full, simple example
+### Basic search example
+
+Here's a complete example showing the typical flow: create a collection, add documents, and search.
 
 ```python
 # Build the base search with filtering
@@ -122,7 +141,17 @@ query_text = "What are the latest advances in quantum computing?"
 result = collection.search(search.rank(Knn(query=query_text)))
 ```
 
-An example of hybrid search using Rrf
+### Hybrid search with Reciprocal Rank Fusion (RRF)
+
+Hybrid search combines results from multiple indexes (typically dense + sparse) to get better results than either alone. RRF is a rank fusion algorithm that merges ranked lists without needing score normalization.
+
+**How RRF works:**
+1. Each `Knn` produces a ranked list of candidates
+2. Documents are scored based on their rank position in each list: `1 / (k + rank)`
+3. Scores are weighted and summed across all lists
+4. Final results are sorted by combined score
+
+The `k` parameter (default 60) controls how much weight top-ranked documents get relative to lower-ranked ones. Higher `k` values make rankings more uniform.
 
 ```python
 # Dense semantic embeddings
@@ -158,3 +187,12 @@ search = (Search()
 
 results = collection.search(search)
 ```
+
+### Building effective hybrid search
+
+For best results with hybrid search:
+
+1. **Use comparable limits** for each `Knn` so both indexes contribute meaningfully
+2. **Weight based on your data**: keyword-heavy content might favor sparse; conceptual content might favor dense
+3. **Start with 0.7/0.3 weighting** (dense/sparse) and adjust based on evaluation
+4. **Use `returnRank: true`** when combining with RRF, as RRF operates on ranks, not distances

@@ -5,13 +5,26 @@ description: Schema() configures collections with multiple indexes
 
 ## Schema
 
-Schema configures collections with single or multiple indexes
+The Schema API configures collections with advanced indexing options, including multiple indexes on the same collection. This enables hybrid search strategies that combine different retrieval methods.
 
-Note that the Schema() API is only available on Chroma Cloud.
+**Note:** The Schema API is only available on Chroma Cloud.
 
-If you use the Schema API when creating collections, you cannot pass an embedding funciton, you pass the embedding function to the a schema.indexConfig() call.
+### Why use Schema?
 
-Imports needed for the examples show in this file
+Without Schema, collections have a single dense embedding index. With Schema, you can:
+
+- Add sparse indexes (BM25, SPLADE) alongside dense embeddings for hybrid search
+- Configure multiple embedding functions on the same collection
+- Fine-tune index parameters for your specific use case
+
+Hybrid search (combining dense and sparse) often outperforms either method alone, especially for queries that mix conceptual meaning with specific keywords.
+
+### Important: Schema vs embedding function
+
+When using the Schema API, you cannot pass an embedding function directly to `getOrCreateCollection`. Instead, you pass the embedding function to `schema.indexConfig()`. This gives you explicit control over which index uses which embedding.
+
+### Imports
+
 ```typescript
 import { ChromaBm25EmbeddingFunction } from '@chroma-core/chroma-bm25';
 import {
@@ -27,18 +40,20 @@ import {
 } from 'chromadb';
 ```
 
-## Basic Example
+## Basic example
+
+This creates a collection with a single dense embedding index, equivalent to not using Schema at all. It's a starting point for understanding the API.
 
 ```typescript
-const schema = new Schema();
+const basicSchema = new Schema();
 
 // Configure vector index with custom embedding function
 const embeddingFunction = new OpenAIEmbeddingFunction({
-  apiKey: 'your-api-key',
+  apiKey: process.env.OPENAI_API_KEY,
   modelName: 'text-embedding-3-small',
 });
 
-schema.createIndex(
+basicSchema.createIndex(
   new VectorIndexConfig({
     space: 'cosine',
     embeddingFunction: embeddingFunction,
@@ -46,28 +61,35 @@ schema.createIndex(
 );
 ```
 
-## BM25 config
+## BM25 sparse index
+
+BM25 is a traditional keyword-based ranking algorithm. It works well when:
+- Exact keyword matches are important
+- Users search with specific terms they expect to find verbatim
+- You want a lightweight sparse index without neural embeddings
+
+BM25 doesn't understand semantics, so "car" won't match "automobile". Use it as a complement to dense embeddings, not a replacement.
 
 ```typescript
-const schema3 = new Schema();
+const bm25Schema = new Schema();
 const SPARSE_BM25_KEY = 'bm25_key';
 
 // Configure vector index with both sparse and dense embeddings
-const denseEmbeddingFunction2 = new OpenAIEmbeddingFunction({
-  apiKey: 'your-api-key',
+const bm25DenseEmbeddingFunction = new OpenAIEmbeddingFunction({
+  apiKey: process.env.OPENAI_API_KEY,
   modelName: 'text-embedding-3-small',
 });
 
-schema3.createIndex(
+bm25Schema.createIndex(
   new VectorIndexConfig({
     space: 'cosine',
-    embeddingFunction: denseEmbeddingFunction2,
+    embeddingFunction: bm25DenseEmbeddingFunction,
   })
 );
 
 const bm25EmbeddingFunction = new ChromaBm25EmbeddingFunction();
 
-schema3.createIndex(
+bm25Schema.createIndex(
   new SparseVectorIndexConfig({
     sourceKey: K.DOCUMENT,
     embeddingFunction: bm25EmbeddingFunction,
@@ -76,37 +98,54 @@ schema3.createIndex(
 );
 ```
 
-## SPLADE config
+## SPLADE sparse index
 
-SPLADE is a very high performing sparse vector search index. It works extremely well and generally should be used over BM25 unless there are specific reasons otherwise.
+SPLADE (Sparse Lexical and Expansion) is a neural sparse embedding model. It combines the efficiency of sparse retrieval with learned term expansion.
+
+**SPLADE vs BM25:**
+- SPLADE understands synonyms and related terms (like dense embeddings)
+- SPLADE produces sparse vectors (efficient like BM25)
+- SPLADE generally outperforms BM25 for most use cases
+- BM25 is simpler and doesn't require a neural model
+
+For hybrid search, SPLADE + dense embeddings is typically the best combination. Use BM25 only if you have specific requirements for traditional keyword matching or want to avoid the neural model dependency.
 
 ```typescript
-const schema2 = new Schema();
+const spladeSchema = new Schema();
 const SPARSE_SPLADE_KEY = 'splade_key';
 
 // Configure vector index with both sparse and dense embeddings
 const denseEmbeddingFunction = new OpenAIEmbeddingFunction({
-  apiKey: 'your-api-key',
+  apiKey: process.env.OPENAI_API_KEY,
   modelName: 'text-embedding-3-small',
 });
 
-schema2.createIndex(
+spladeSchema.createIndex(
   new VectorIndexConfig({
     space: 'cosine',
     embeddingFunction: denseEmbeddingFunction,
   })
 );
 
-const embedder = new ChromaCloudSpladeEmbeddingFunction({
+const spladeEmbeddingFunction = new ChromaCloudSpladeEmbeddingFunction({
   model: ChromaCloudSpladeEmbeddingModel.SPLADE_PP_EN_V1,
   apiKeyEnvVar: 'CHROMA_API_KEY',
 });
 
-schema.createIndex(
+spladeSchema.createIndex(
   new SparseVectorIndexConfig({
     sourceKey: K.DOCUMENT,
-    embeddingFunction: embedder,
+    embeddingFunction: spladeEmbeddingFunction,
   }),
   SPARSE_SPLADE_KEY
 );
 ```
+
+## Choosing an index strategy
+
+| Use case | Recommended setup |
+|----------|-------------------|
+| General semantic search | Dense embeddings only (default) |
+| Search with important keywords | Dense + BM25 hybrid |
+| Best quality hybrid search | Dense + SPLADE hybrid |
+| Exact term matching required | Include BM25 alongside other indexes |

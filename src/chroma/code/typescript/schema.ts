@@ -14,15 +14,15 @@ import {
 // @end
 
 // @snippet:basic-example
-const schema = new Schema();
+const basicSchema = new Schema();
 
 // Configure vector index with custom embedding function
 const embeddingFunction = new OpenAIEmbeddingFunction({
-  apiKey: 'your-api-key',
+  apiKey: process.env.OPENAI_API_KEY,
   modelName: 'text-embedding-3-small',
 });
 
-schema.createIndex(
+basicSchema.createIndex(
   new VectorIndexConfig({
     space: 'cosine',
     embeddingFunction: embeddingFunction,
@@ -31,59 +31,56 @@ schema.createIndex(
 // @end
 
 // @snippet:splade
-
-const schema2 = new Schema();
+const spladeSchema = new Schema();
 const SPARSE_SPLADE_KEY = 'splade_key';
 
 // Configure vector index with both sparse and dense embeddings
 const denseEmbeddingFunction = new OpenAIEmbeddingFunction({
-  apiKey: 'your-api-key',
+  apiKey: process.env.OPENAI_API_KEY,
   modelName: 'text-embedding-3-small',
 });
 
-schema2.createIndex(
+spladeSchema.createIndex(
   new VectorIndexConfig({
     space: 'cosine',
     embeddingFunction: denseEmbeddingFunction,
   })
 );
 
-const embedder = new ChromaCloudSpladeEmbeddingFunction({
+const spladeEmbeddingFunction = new ChromaCloudSpladeEmbeddingFunction({
   model: ChromaCloudSpladeEmbeddingModel.SPLADE_PP_EN_V1,
   apiKeyEnvVar: 'CHROMA_API_KEY',
 });
 
-schema.createIndex(
+spladeSchema.createIndex(
   new SparseVectorIndexConfig({
     sourceKey: K.DOCUMENT,
-    embeddingFunction: embedder,
+    embeddingFunction: spladeEmbeddingFunction,
   }),
   SPARSE_SPLADE_KEY
 );
-
 // @end
 
 // @snippet:bm25
-
-const schema3 = new Schema();
+const bm25Schema = new Schema();
 const SPARSE_BM25_KEY = 'bm25_key';
 
 // Configure vector index with both sparse and dense embeddings
-const denseEmbeddingFunction2 = new OpenAIEmbeddingFunction({
-  apiKey: 'your-api-key',
+const bm25DenseEmbeddingFunction = new OpenAIEmbeddingFunction({
+  apiKey: process.env.OPENAI_API_KEY,
   modelName: 'text-embedding-3-small',
 });
 
-schema3.createIndex(
+bm25Schema.createIndex(
   new VectorIndexConfig({
     space: 'cosine',
-    embeddingFunction: denseEmbeddingFunction2,
+    embeddingFunction: bm25DenseEmbeddingFunction,
   })
 );
 
 const bm25EmbeddingFunction = new ChromaBm25EmbeddingFunction();
 
-schema3.createIndex(
+bm25Schema.createIndex(
   new SparseVectorIndexConfig({
     sourceKey: K.DOCUMENT,
     embeddingFunction: bm25EmbeddingFunction,

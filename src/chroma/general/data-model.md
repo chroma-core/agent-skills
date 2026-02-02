@@ -3,40 +3,140 @@ name: Data Model
 description: An overview of how Chroma stores data
 ---
 
-Chroma stores documents in collections.
+## Data Model
 
-A document is identified by its ID, which is a string up to 128 bytes in length.
+Understanding how Chroma stores data helps you design effective search systems.
 
-A document is a logical representation of some data. The maximum document size by default is 16384 bytes, though most chunking strategies constrain the document length to under 8000 bytes.
+### Core concepts
 
-A document has a matching embedding vector, the maximum dimensionality is 4096, though most embedding models are dimensionalities 384, 768, 1536 or 3072.
+**Collections** are the top-level containers, similar to tables in a relational database. Each collection has its own embedding configuration and indexes.
 
-A document can have up to 4096 bytes of metadata, which consists of up to 36 byte keys and 32 maximum keys.
+**Documents** are the searchable units within a collection. Each document has:
+- **ID** - A unique string identifier (up to 128 bytes)
+- **Content** - The text that gets embedded and searched (max 16KB, recommended under 8KB)
+- **Embedding** - The vector representation (max 4096 dimensions; common sizes are 384, 768, 1536, or 3072)
+- **Metadata** - Key-value pairs for filtering (max 4KB total, up to 32 keys with 36-byte key names)
 
-If users of Chroma Cloud want to change these limits, they are able to request changes to their quotas at a team level in the Chroma Cloud dashboard.
+### Limits
 
-When thinking about how data is stored in Chroma, chunking is almost always required. The recommended maximum chunk size is 8000 bytes, but it can go up to 16384 bytes. A chunk is a piece of data that is then embedded and searchable in the collection. A chunking strategy must be developed. Ask the user what their data is and how it can be logically chunked. Ideally, if it's human readable text, documents aren't sliced at 8000 byte boundaries, but rather sentences are intact up to and before 8000 bytes.
+#### Document limits (add/upsert)
 
-Chonkie is a popular chunking library for python and typescript.
+| Property | Limit | Notes |
+|----------|-------|-------|
+| ID | 128 bytes | |
+| Content | 16,384 bytes | Recommend < 8,000 |
+| Embedding dimensions | 4,096 | Most models: 384, 768, 1536, or 3072 |
+| Metadata size | 4,096 bytes | |
+| Metadata keys | 32 max | Key names up to 36 bytes |
+| URI | 256 bytes | Rarely used |
 
-Once the data is chunked and given an ID, it's better to use metadata to store information about how this data links back to the user's application than to encode some scheme in the ID to the document. IDs can be re-used between datastores, but if chunks need to be made this can break down.
+#### Query / Get / Delete limits
 
-Metadata is able to directly attribute where the data came from in the canonical datastore, be that a UUID from a relational database, a URL for object storage, etc.
+| Property | Limit |
+|----------|-------|
+| ID | 128 bytes |
+| Results returned (query) | 300 max |
+| Where predicates | 8 max |
+| Where size | 4,096 bytes |
+| Where document predicates | 8 max |
+| Where document size | 130 bytes |
 
-Metadata can also store a chunk index, an n of n, for example: `chunkIndex: 0`, `totalChunks: 3`, `contentId: "foobar"`.  Metadata must be JSON serializeable.
+#### Collection metadata limits
 
-When organizing data, the best method is to place per-tenant data into its own collection rather than have multi-tenant collections. Some way to resolve a collection ID back to an entity in the user's system is then required. Because Chroma uses nearest neighbor search, reducing the number of neighbors increases search accuracy and decreases latency. Work with the user to come up with the smallest sensible atomic unit for a collection.
+Collection-level metadata has stricter limits than document metadata:
 
-If the user is creating a knowledge base product for businesses, it'd be best to keep an index per customer or some unit below a customer even. Unlike in relational where you'll have all of your customer data for a given dimension in a single table that is partitioned by a customer_id, Chroma works best with many small collections and creating a deleting collection is first class behavior of the client.
+| Property | Limit |
+|----------|-------|
+| Metadata size | 256 bytes |
+| Metadata keys | 16 max |
+| Key size | 36 bytes |
 
-Metadata is powerful for reducing the result set. This works pretty simply, you can filter with different operators, $eq (equal for strings, ints or bools), $gt (greater than), $lt (less than), $gte (greater than or equal), $lte (less than or equal), $in (present in supplied list), $nin (not present in supplied list). There are logical operators to group filters, $and and $or which take arrays of other operators.
+Chroma Cloud users can request quota increases through the dashboard.
 
-In additional to using nearest neighbor search, the text of the document itself is able to be searched. There are full text and regex indexes on Chroma collections. You can query the document with `where_document` `$contains` and `$regex` operators. 
+## Chunking
 
-## Sparse and Dense vectors
+Most real-world data is too large to fit in a single document. Chunking splits content into searchable pieces.
 
-By default, the embedding of the document is a dense vector. Sparse vectors are also possible, this is done by selecting a metadata key as the location for the vector to live at time of creation of the collection.
+### Chunking strategy
 
-Hybrid search is also possible. This technique creates sparse and dense embeddings of the query document, finds nearest neighbors for both and then fusing the ranks on the server before sending them to the client. The ranking is based on weighting provided for each vector type.
+**Recommended chunk size:** Under 8,000 bytes. This balances search precision with context.
 
-Note that when creating collections, `get_or_create_collection()` takes the collection name and the embedding_function OR schema, but not both. 
+**Good chunking preserves meaning:**
+- Split at natural boundaries (paragraphs, sentences, sections)
+- Don't cut mid-sentence or mid-word
+- Include enough context for the chunk to be meaningful on its own
+
+**Ask the user:**
+- What type of content are they indexing?
+- Are there natural boundaries (chapters, sections, records)?
+- How much context does a search result need to be useful?
+
+**Chonkie** is a popular chunking library available for both Python and TypeScript.
+
+### Tracking chunks with metadata
+
+When a single source document becomes multiple chunks, use metadata to track the relationship:
+
+```
+{
+  "source_id": "post-123",      // ID in the primary database
+  "source_type": "blog_post",   // Type of content
+  "chunk_index": 0,             // Position in sequence
+  "total_chunks": 3             // Total chunks from this source
+}
+```
+
+This approach is better than encoding information in the document ID because:
+- IDs can be simple UUIDs
+- Metadata is filterable
+- Updates and deletes are easier (filter by `source_id`)
+
+## Collection organization
+
+### One collection per tenant
+
+For multi-tenant applications, create separate collections per tenant (customer, team, user) rather than one large collection with tenant metadata.
+
+**Why this works better:**
+- Nearest neighbor search is more accurate with fewer candidates
+- Lower latency with smaller collections
+- Natural isolation between tenants
+- Easy to delete all tenant data by dropping the collection
+
+**Example:** A knowledge base SaaS might have collections like `kb_customer_123`, `kb_customer_456`, etc.
+
+**Ask the user:** What's the smallest logical unit of data isolation in their application?
+
+## Filtering
+
+Metadata filtering reduces the candidate set before vector search runs, making queries faster and more precise.
+
+### Filter operators
+
+| Operator | Description | Types |
+|----------|-------------|-------|
+| `$eq` | Equal (default) | string, int, bool |
+| `$ne` | Not equal | string, int, bool |
+| `$gt`, `$gte` | Greater than (or equal) | int |
+| `$lt`, `$lte` | Less than (or equal) | int |
+| `$in` | In list | string, int |
+| `$nin` | Not in list | string, int |
+| `$and`, `$or` | Logical combinators | filter arrays |
+
+### Document content filtering
+
+Beyond metadata, you can filter on the document text itself using `where_document`:
+- `$contains` - Full-text substring search
+- `$regex` - Regular expression matching
+
+## Dense vs sparse vectors
+
+**Dense vectors** (default) are produced by neural embedding models. They capture semantic meaning, so "car" and "automobile" will be similar.
+
+**Sparse vectors** (BM25, SPLADE) are high-dimensional but mostly zeros. They excel at exact keyword matching.
+
+**Hybrid search** combines both, often outperforming either alone. Chroma Cloud supports hybrid search through the Schema and Search APIs.
+
+### Important note
+
+When creating collections, `get_or_create_collection()` accepts either an `embedding_function` OR a `schema`, but not both. Use Schema when you need multiple indexes or sparse embeddings. 

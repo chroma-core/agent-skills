@@ -5,12 +5,80 @@ description: Provides expertise on Chroma vector database integration for semant
 
 ## Instructions
 
-The Chroma skill has a few main abilities:
+### Before writing any code, gather this information:
 
-- Help the user understand how to design their search system
-- Help the user select an embedding model
-- Help the user understand what changes need to be made to their system to add search
-- Help the user design their search schema, pick an embedding model and what type of search
+1. **Deployment target**: Local Chroma or Chroma Cloud?
+   - If Cloud: they'll need API key, tenant, and database configured
+   - If Local: determine if they need persistence or ephemeral storage
+
+2. **Search type** (Cloud only): Dense only, or hybrid search?
+   - Dense only: simpler setup, good for most semantic search
+   - Hybrid (dense + sparse): better for keyword-heavy queries, use SPLADE
+
+3. **Embedding model**: Which provider/model?
+   - Default: `@chroma-core/default-embed` (TypeScript) or built-in (Python)
+   - OpenAI: `text-embedding-3-large` is most popular, requires `@chroma-core/openai`
+   - Ask the user if they have a preference or existing provider
+
+4. **Data structure**: What are they indexing?
+   - Needed to determine chunking strategy
+   - Needed to design metadata schema for filtering
+
+### Decision workflow
+
+```
+User wants to add search
+         │
+         ▼
+    Local or Cloud?
+    ┌─────┴─────┐
+    │           │
+  Local       Cloud
+    │           │
+    │           ▼
+    │     Need hybrid search?
+    │     ┌─────┴─────┐
+    │     │           │
+    │    No          Yes
+    │     │           │
+    │     │           ▼
+    │     │     Use Schema() + Search() APIs
+    │     │     with SPLADE sparse index
+    │     │           │
+    │     ▼           │
+    └──►  Use basic collection.query()
+                      │
+                      ▼
+              Choose embedding model
+                      │
+                      ▼
+              Design metadata schema
+                      │
+                      ▼
+              Implement data sync strategy
+```
+
+### When to ask questions vs proceed
+
+**Ask first:**
+- Embedding model choice (cost and quality implications)
+- Cloud vs local deployment
+- Hybrid vs dense-only search
+- Multi-tenant data isolation strategy
+
+**Proceed with sensible defaults:**
+- Use `getOrCreateCollection()` / `get_or_create_collection()`
+- Use cosine similarity (most common)
+- Chunk size under 8KB
+- Store source IDs in metadata for updates/deletes
+
+### What to validate
+
+- Environment variables are set for Cloud deployments
+- Correct client import (`CloudClient` vs `Client`)
+- Embedding function package is installed (TypeScript)
+- Schema and Search APIs only used with Cloud
+- **Important:** `get_or_create_collection()` accepts either an `embedding_function` OR a `schema`, but not both. Use Schema when you need multiple indexes (hybrid search) or sparse embeddings; use embedding_function for simple dense-only search.
 
 ## Quick Start
 
@@ -100,7 +168,7 @@ Otherwise, the only thing that needs to change is the client that is imported fr
 
 If you're using cloud, you probably want to use the Schema() and Search() APIs.
 
-Also, if the user wants to use cloud, as them what type of search they want to use. Just dense embeddings, or hybrid. If hybrid, you probably want to use SPLADE as the sparse embedding strategy.
+Also, if the user wants to use cloud, ask them what type of search they want to use. Just dense embeddings, or hybrid. If hybrid, you probably want to use SPLADE as the sparse embedding strategy.
 
 ### Embeddings
 
@@ -121,6 +189,8 @@ If you need more detailed information about Chroma beyond what's covered in this
 - [Chroma Regex Filtering](./regex/typescript.md) - Learn how to use regex filters in Chroma queries
 - [Query and Get](./querying/typescript.md) - Query and Get Data from Chroma Collections
 - [Schema](./schema/typescript.md) - Schema() configures collections with multiple indexes
+- [Updating and Deleting](./updating-deleting/typescript.md) - Update existing documents and delete data from collections
+- [Error Handling](./error-handling/typescript.md) - Handling errors and failures when working with Chroma
 - [Local Chroma](./local-chroma/typescript.md) - How to run and use local chroma
 - [Search() API](./search-api/typescript.md) - An expressive and flexible API for doing dense and sparse vector search on collections, as well as hybrid search
 
@@ -129,10 +199,12 @@ If you need more detailed information about Chroma beyond what's covered in this
 - [Chroma Regex Filtering](./regex/python.md) - Learn how to use regex filters in Chroma queries
 - [Query and Get](./querying/python.md) - Query and Get Data from Chroma Collections
 - [Schema](./schema/python.md) - Schema() configures collections with multiple indexes
+- [Updating and Deleting](./updating-deleting/python.md) - Update existing documents and delete data from collections
+- [Error Handling](./error-handling/python.md) - Handling errors and failures when working with Chroma
 - [Local Chroma](./local-chroma/python.md) - How to run and use local chroma
 - [Search() API](./search-api/python.md) - An expressive and flexible API for doing dense and sparse vector search on collections, as well as hybrid search
 
 ## General
 
 - [Data Model](./data-model.md) - An overview of how Chroma stores data
-- [Understanding a codebase](./understanding-a-codebase.md) - Help the agent understand how to learn about a codebase
+- [Integrating Chroma into an existing system](./understanding-a-codebase.md) - Guidance for adding Chroma search to an existing application

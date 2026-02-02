@@ -7,7 +7,7 @@ from chromadb.utils.embedding_functions import ChromaBm25EmbeddingFunction
 # @end
 
 # @snippet:basic-example
-schema = Schema()
+basic_schema = Schema()
 
 # Configure vector index with custom embedding function
 embedding_function = OpenAIEmbeddingFunction(
@@ -15,7 +15,7 @@ embedding_function = OpenAIEmbeddingFunction(
     model_name="text-embedding-3-small"
 )
 
-schema.create_index(config=VectorIndexConfig(
+basic_schema.create_index(config=VectorIndexConfig(
     space="cosine",
     embedding_function=embedding_function
 ))
@@ -23,47 +23,47 @@ schema.create_index(config=VectorIndexConfig(
 
 
 # @snippet:splade
-schema2 = Schema()
+splade_schema = Schema()
 SPARSE_SPLADE_KEY = "sparse_splade"
 
 # Configure vector index with custom embedding function
-embedding_function = OpenAIEmbeddingFunction(
+dense_embedding_function = OpenAIEmbeddingFunction(
     api_key="your-api-key",
     model_name="text-embedding-3-small"
 )
 
-schema2.create_index(config=VectorIndexConfig(
+splade_schema.create_index(config=VectorIndexConfig(
     space="cosine",
-    embedding_function=embedding_function
+    embedding_function=dense_embedding_function
 ))
 
-sparse_ef = ChromaCloudSpladeEmbeddingFunction()
+splade_embedding_function = ChromaCloudSpladeEmbeddingFunction()
 
-schema2.create_index(config=SparseVectorIndexConfig(
+splade_schema.create_index(config=SparseVectorIndexConfig(
 	source_key=cast(str, K.DOCUMENT),
-	embedding_function=sparse_ef
+	embedding_function=splade_embedding_function
 ), key=SPARSE_SPLADE_KEY)
 # @end
 
 # @snippet:bm25
-schema3 = Schema()
+bm25_schema = Schema()
 SPARSE_BM25_KEY = "sparse_bm25"
 
 # Configure vector index with custom embedding function
-embedding_function = OpenAIEmbeddingFunction(
+bm25_dense_embedding_function = OpenAIEmbeddingFunction(
     api_key="your-api-key",
     model_name="text-embedding-3-small"
 )
 
-schema3.create_index(config=VectorIndexConfig(
+bm25_schema.create_index(config=VectorIndexConfig(
     space="cosine",
-    embedding_function=embedding_function
+    embedding_function=bm25_dense_embedding_function
 ))
 
-sparse_ef = ChromaBm25EmbeddingFunction()
+bm25_embedding_function = ChromaBm25EmbeddingFunction()
 
-schema3.create_index(config=SparseVectorIndexConfig(
+bm25_schema.create_index(config=SparseVectorIndexConfig(
 	source_key=cast(str, K.DOCUMENT),
-	embedding_function=sparse_ef
+	embedding_function=bm25_embedding_function
 ), key=SPARSE_BM25_KEY)
 # @end

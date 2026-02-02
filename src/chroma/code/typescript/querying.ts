@@ -115,3 +115,56 @@ const andExample = {
 };
 
 // @end
+
+// @snippet:get-method
+
+// Get by specific IDs
+const docs = await collection.get({
+  ids: ['doc1', 'doc2'],
+});
+
+// Get with pagination (default limit is 100)
+const page = await collection.get({
+  limit: 20,
+  offset: 0,
+});
+
+// Get with metadata filter (no similarity ranking)
+const filtered = await collection.get({
+  where: { category: 'blog' },
+  limit: 50,
+});
+
+// @end
+
+// @snippet:where-document
+
+// Find documents containing a specific string (case-sensitive)
+const containsResults = await collection.query({
+  queryTexts: ['search query'],
+  whereDocument: { $contains: 'important keyword' },
+});
+
+// Exclude documents containing a string
+const excludedResults = await collection.query({
+  queryTexts: ['search query'],
+  whereDocument: { $not_contains: 'deprecated' },
+});
+
+// Combine multiple document filters with $and
+const combinedResults = await collection.query({
+  queryTexts: ['search query'],
+  whereDocument: {
+    $and: [{ $contains: 'python' }, { $not_contains: 'legacy' }],
+  },
+});
+
+// Combine whereDocument with metadata filtering
+const fullFilterResults = await collection.query({
+  queryTexts: ['search query'],
+  nResults: 10,
+  where: { status: 'published' },
+  whereDocument: { $contains: 'tutorial' },
+});
+
+// @end
