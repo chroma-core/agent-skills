@@ -26,37 +26,19 @@ description: Provides expertise on Chroma vector database integration for semant
 
 ### Decision workflow
 
-```
-User wants to add search
-         │
-         ▼
-    Local or Cloud?
-    ┌─────┴─────┐
-    │           │
-  Local       Cloud
-    │           │
-    │           ▼
-    │     Need hybrid search?
-    │     ┌─────┴─────┐
-    │     │           │
-    │    No          Yes
-    │     │           │
-    │     │           ▼
-    │     │     Use Schema() + Search() APIs
-    │     │     with SPLADE sparse index
-    │     │           │
-    │     ▼           │
-    └──►  Use basic collection.query()
-                      │
-                      ▼
-              Choose embedding model
-                      │
-                      ▼
-              Design metadata schema
-                      │
-                      ▼
-              Implement data sync strategy
-```
+- User wants to add search
+- Ask Local Chroma or Chroma Cloud?
+  - Local Chroma
+    - Use collection.query() with a dense embedding model
+  - Chroma Cloud
+    - Ask if hybrid search is needed
+      - Yes
+        - Use Schema() + Search() APIs with SPLADE sparse index
+      - No
+        - Use collection.query() with a dense embedding model
+- Ask for which embedding model
+- Design metadata schema
+- Implement data sync strategy
 
 ### When to ask questions vs proceed
 
@@ -172,7 +154,7 @@ Also, if the user wants to use cloud, ask them what type of search they want to 
 
 ### Embeddings
 
-When working with embedding functions, the default embedding function is available, but it's often not the best option. Ask the user what they want. The most popular option is to use text-embedding-3-large by Openai. It's on npm as @chroma-core/openai.
+When working with embedding functions, the default embedding function is available, but it's often not the best option. Ask the user what they want. The most popular options are to use text-embedding-3-large by Openai, which is on npm as @chroma-core/openai or Chroma Cloud's 
 
 In typescript, you need to install a package for each embedding function, install the correct one based on what the user says. 
 
