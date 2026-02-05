@@ -16,11 +16,15 @@ The Search API provides a fluent, composable interface for building complex quer
 - You're using local Chroma
 - You want the most straightforward API
 
-**Use `Search()` when:**
+**Use `search()` when:**
 - You need hybrid search combining dense and sparse indexes
 - You want fine-grained control over ranking and filtering
 - You're building complex queries with multiple conditions
 - You need to select specific fields to return
+
+Note that the Search() class uses a builder pattern, so if you call a method on it, it does not mutate that instance, it returns a copy with that mutation, so it needs re-assignging to the variable that is referencing it.
+
+The `search()` method on a collection is able to take a single Search class instance or an arry of them, so rhe return value of the `search()` method on a collection is a SearchResult class, which has a `rows()` method, which will give you an array of array of results. So index 0 of the return value of `rows()` will be the array of the first Search class instance results.
 
 ### Setup
 
@@ -196,3 +200,5 @@ For best results with hybrid search:
 2. **Weight based on your data**: keyword-heavy content might favor sparse; conceptual content might favor dense
 3. **Start with 0.7/0.3 weighting** (dense/sparse) and adjust based on evaluation
 4. **Use `returnRank: true`** when combining with RRF, as RRF operates on ranks, not distances
+
+Note that return ranks from RRF are netagive and the value furthest from 0 is the closest to the original query.
