@@ -17,6 +17,22 @@ Before writing any code, clarify:
 4. **How often does the data change?** (informs sync strategy)
 5. **What latency is acceptable for updates to appear in search?**
 
+## Understanding the source data
+
+Before designing the import pipeline, ask the user if you can look at a sample of the data that will be made searchable. Seeing real records is far more useful than a description of the schema.
+
+**If the data is in a database:** Write a short script that connects to the database and prints a few records. For example, a script that queries 3-5 rows from the relevant table and prints them to the terminal. This lets you see the actual field names, content lengths, and metadata available.
+
+**If the data is on disk:** Read a few of the files directly to understand their structure, format, and size. For example, if indexing markdown files, read 2-3 of them to see how they're organized.
+
+What to look for:
+- **Which field(s) contain the searchable text** — this becomes the document content in Chroma
+- **How long the content is** — determines whether chunking is needed
+- **What metadata is available** — fields like category, author, date, or tenant ID that could be useful for filtering
+- **How records are identified** — the primary key or filename that will link Chroma documents back to the source
+
+This step prevents guesswork and leads to better chunking and metadata design decisions.
+
 ## Initial data import (offline ingest)
 
 The first step is getting existing data into Chroma. This typically involves:
