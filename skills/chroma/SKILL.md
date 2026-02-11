@@ -64,6 +64,18 @@ description: Provides expertise on Chroma vector database integration for semant
 
 ## Quick Start
 
+### Chroma Cloud Setup (CLI)
+
+To get started with Chroma Cloud, use the CLI to log in, create a database, and write your credentials to a `.env` file:
+
+```bash
+chroma login
+chroma db create <my_database_name>
+chroma db connect <my_database_name> --env-file
+```
+
+This writes a `.env` file with `CHROMA_API_KEY`, `CHROMA_TENANT`, and `CHROMA_DATABASE` to the current directory. The code examples below read from these environment variables.
+
 **TypeScript (Chroma Cloud):**
 
 ```typescript
@@ -188,5 +200,6 @@ If you need more detailed information about Chroma beyond what's covered in this
 
 ## General
 
+- [Chroma CLI](./cli.md) - Getting started with the Chroma CLI for cloud database management
 - [Data Model](./data-model.md) - An overview of how Chroma stores data
 - [Integrating Chroma into an existing system](./understanding-a-codebase.md) - Guidance for adding Chroma search to an existing application
