@@ -7,6 +7,15 @@ description: Handling errors and failures when working with Chroma
 
 Chroma operations can fail for various reasons: connection issues, missing resources, invalid data, or quota limits. This guide covers common error scenarios and how to handle them.
 
+```python
+import json
+import os
+import time
+
+import chromadb
+from chromadb.errors import NotFoundError
+```
+
 ### Error types
 
 **Python** uses specific exception classes:

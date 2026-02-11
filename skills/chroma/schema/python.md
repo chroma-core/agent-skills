@@ -26,32 +26,20 @@ When using the Schema API, you cannot pass an embedding function directly to `ge
 ### Imports
 
 ```python
+import os
 from typing import cast
+import chromadb
 from chromadb import Schema, VectorIndexConfig, SparseVectorIndexConfig, K
 from chromadb.utils.embedding_functions import ChromaCloudSpladeEmbeddingFunction
 from chromadb.utils.embedding_functions import ChromaBm25EmbeddingFunction
 from chromadb.utils.embedding_functions import ChromaCloudQwenEmbeddingFunction
 from chromadb.utils.embedding_functions.chroma_cloud_qwen_embedding_function import ChromaCloudQwenEmbeddingModel
-```
 
-## Basic example
-
-This creates a collection with a single dense embedding index, equivalent to not using Schema at all. It's a starting point for understanding the API.
-
-```python
-basic_schema = Schema()
-
-# Configure vector index with custom embedding function
-embedding_function = ChromaCloudQwenEmbeddingFunction(
-    model=ChromaCloudQwenEmbeddingModel.QWEN3_EMBEDDING_0p6B,
-    task=None,
-    api_key_env_var="CHROMA_API_KEY"
+client = chromadb.CloudClient(
+    tenant=os.getenv("CHROMA_TENANT"),
+    database=os.getenv("CHROMA_DATABASE"),
+    api_key=os.getenv("CHROMA_API_KEY"),
 )
-
-basic_schema.create_index(config=VectorIndexConfig(
-    space="cosine",
-    embedding_function=embedding_function
-))
 ```
 
 ## BM25 sparse index
@@ -85,6 +73,8 @@ bm25_schema.create_index(config=SparseVectorIndexConfig(
 	source_key=cast(str, K.DOCUMENT),
 	embedding_function=bm25_embedding_function
 ), key=SPARSE_BM25_KEY)
+
+collection = client.get_or_create_collection(name="my_collection", schema=bm25_schema)
 ```
 
 ## SPLADE sparse index
@@ -121,6 +111,8 @@ splade_schema.create_index(config=SparseVectorIndexConfig(
 	source_key=cast(str, K.DOCUMENT),
 	embedding_function=splade_embedding_function
 ), key=SPARSE_SPLADE_KEY)
+
+collection = client.get_or_create_collection(name="my_collection", schema=splade_schema)
 ```
 
 ## Choosing an index strategy
@@ -130,4 +122,3 @@ splade_schema.create_index(config=SparseVectorIndexConfig(
 | General semantic search | Dense embeddings only (default) |
 | Search with important keywords | Dense + BM25 hybrid |
 | Best quality hybrid search | Dense + SPLADE hybrid |
-| Exact term matching required | Include BM25 alongside other indexes |

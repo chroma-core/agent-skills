@@ -1,28 +1,19 @@
 # @snippet:imports
+import os
 from typing import cast
+import chromadb
 from chromadb import Schema, VectorIndexConfig, SparseVectorIndexConfig, K
 from chromadb.utils.embedding_functions import ChromaCloudSpladeEmbeddingFunction
 from chromadb.utils.embedding_functions import ChromaBm25EmbeddingFunction
 from chromadb.utils.embedding_functions import ChromaCloudQwenEmbeddingFunction
 from chromadb.utils.embedding_functions.chroma_cloud_qwen_embedding_function import ChromaCloudQwenEmbeddingModel
-# @end
 
-# @snippet:basic-example
-basic_schema = Schema()
-
-# Configure vector index with custom embedding function
-embedding_function = ChromaCloudQwenEmbeddingFunction(
-    model=ChromaCloudQwenEmbeddingModel.QWEN3_EMBEDDING_0p6B,
-    task=None,
-    api_key_env_var="CHROMA_API_KEY"
+client = chromadb.CloudClient(
+    tenant=os.getenv("CHROMA_TENANT"),
+    database=os.getenv("CHROMA_DATABASE"),
+    api_key=os.getenv("CHROMA_API_KEY"),
 )
-
-basic_schema.create_index(config=VectorIndexConfig(
-    space="cosine",
-    embedding_function=embedding_function
-))
 # @end
-
 
 # @snippet:splade
 splade_schema = Schema()
@@ -46,6 +37,8 @@ splade_schema.create_index(config=SparseVectorIndexConfig(
 	source_key=cast(str, K.DOCUMENT),
 	embedding_function=splade_embedding_function
 ), key=SPARSE_SPLADE_KEY)
+
+collection = client.get_or_create_collection(name="my_collection", schema=splade_schema)
 # @end
 
 # @snippet:bm25
@@ -70,4 +63,6 @@ bm25_schema.create_index(config=SparseVectorIndexConfig(
 	source_key=cast(str, K.DOCUMENT),
 	embedding_function=bm25_embedding_function
 ), key=SPARSE_BM25_KEY)
+
+collection = client.get_or_create_collection(name="my_collection", schema=bm25_schema)
 # @end

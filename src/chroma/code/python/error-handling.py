@@ -1,9 +1,11 @@
+# @snippet:imports
 import json
 import os
 import time
 
 import chromadb
 from chromadb.errors import NotFoundError
+# @end
 
 # @snippet:connection-errors
 

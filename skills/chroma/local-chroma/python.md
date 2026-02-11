@@ -53,6 +53,10 @@ npx chroma run
 
 ### Connecting to local Chroma
 
+```python
+import chromadb
+```
+
 Once the server is running, connect using the `ChromaClient` (not `CloudClient`):
 
 ```python

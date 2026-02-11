@@ -7,6 +7,11 @@ description: Handling errors and failures when working with Chroma
 
 Chroma operations can fail for various reasons: connection issues, missing resources, invalid data, or quota limits. This guide covers common error scenarios and how to handle them.
 
+```typescript
+import { ChromaClient, CloudClient } from 'chromadb';
+import { DefaultEmbeddingFunction } from '@chroma-core/default-embed';
+```
+
 ### Error types
 
 **Python** uses specific exception classes:

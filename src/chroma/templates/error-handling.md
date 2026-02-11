@@ -7,6 +7,8 @@ description: Handling errors and failures when working with Chroma
 
 Chroma operations can fail for various reasons: connection issues, missing resources, invalid data, or quota limits. This guide covers common error scenarios and how to handle them.
 
+{{CODE:imports}}
+
 ### Error types
 
 **Python** uses specific exception classes:

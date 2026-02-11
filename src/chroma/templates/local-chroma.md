@@ -53,6 +53,8 @@ npx chroma run
 
 ### Connecting to local Chroma
 
+{{CODE:imports}}
+
 Once the server is running, connect using the `ChromaClient` (not `CloudClient`):
 
 {{CODE:base-local-example}}

@@ -27,12 +27,6 @@ When using the Schema API, you cannot pass an embedding function directly to `ge
 
 {{CODE:imports}}
 
-## Basic example
-
-This creates a collection with a single dense embedding index, equivalent to not using Schema at all. It's a starting point for understanding the API.
-
-{{CODE:basic-example}}
-
 ## BM25 sparse index
 
 BM25 is a traditional keyword-based ranking algorithm. It works well when:
@@ -65,4 +59,3 @@ For hybrid search, SPLADE + dense embeddings is typically the best combination. 
 | General semantic search | Dense embeddings only (default) |
 | Search with important keywords | Dense + BM25 hybrid |
 | Best quality hybrid search | Dense + SPLADE hybrid |
-| Exact term matching required | Include BM25 alongside other indexes |

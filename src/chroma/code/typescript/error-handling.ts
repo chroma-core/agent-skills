@@ -1,5 +1,7 @@
+// @snippet:imports
 import { ChromaClient, CloudClient } from 'chromadb';
 import { DefaultEmbeddingFunction } from '@chroma-core/default-embed';
+// @end
 
 // @snippet:connection-errors
 

@@ -53,6 +53,11 @@ npx chroma run
 
 ### Connecting to local Chroma
 
+```typescript
+import { ChromaClient } from 'chromadb';
+import { DefaultEmbeddingFunction } from '@chroma-core/default-embed';
+```
+
 Once the server is running, connect using the `ChromaClient` (not `CloudClient`):
 
 ```typescript

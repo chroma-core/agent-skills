@@ -31,37 +31,20 @@ import {
   ChromaCloudQwenEmbeddingFunction,
   ChromaCloudQwenEmbeddingModel,
 } from '@chroma-core/chroma-cloud-qwen';
+import { ChromaCloudSpladeEmbeddingFunction } from '@chroma-core/chroma-cloud-splade';
 import {
-  ChromaCloudSpladeEmbeddingFunction,
-  ChromaCloudSpladeEmbeddingModel,
-} from '@chroma-core/chroma-cloud-splade';
-import {
+  CloudClient,
   K,
   Schema,
   SparseVectorIndexConfig,
   VectorIndexConfig,
 } from 'chromadb';
-```
 
-## Basic example
-
-This creates a collection with a single dense embedding index, equivalent to not using Schema at all. It's a starting point for understanding the API.
-
-```typescript
-const basicSchema = new Schema();
-
-const embeddingFunction = new ChromaCloudQwenEmbeddingFunction({
-  model: ChromaCloudQwenEmbeddingModel.QWEN3_EMBEDDING_0p6B,
-  task: null,
-  apiKeyEnvVar: 'CHROMA_API_KEY',
+const client = new CloudClient({
+  apiKey: process.env.CHROMA_API_KEY,
+  tenant: process.env.CHROMA_TENANT,
+  database: process.env.CHROMA_DATABASE,
 });
-
-basicSchema.createIndex(
-  new VectorIndexConfig({
-    space: 'cosine',
-    embeddingFunction: embeddingFunction,
-  })
-);
 ```
 
 ## BM25 sparse index
@@ -100,6 +83,12 @@ bm25Schema.createIndex(
   }),
   SPARSE_BM25_KEY
 );
+
+// create the collection with the schema
+const bm25CollectionExample = await client.getOrCreateCollection({
+  name: 'my_collection',
+  schema: bm25Schema,
+});
 ```
 
 ## SPLADE sparse index
@@ -132,10 +121,7 @@ spladeSchema.createIndex(
   })
 );
 
-const spladeEmbeddingFunction = new ChromaCloudSpladeEmbeddingFunction({
-  model: ChromaCloudSpladeEmbeddingModel.SPLADE_PP_EN_V1,
-  apiKeyEnvVar: 'CHROMA_API_KEY',
-});
+const spladeEmbeddingFunction = new ChromaCloudSpladeEmbeddingFunction();
 
 spladeSchema.createIndex(
   new SparseVectorIndexConfig({
@@ -144,6 +130,12 @@ spladeSchema.createIndex(
   }),
   SPARSE_SPLADE_KEY
 );
+
+// create the collection with the schema
+const spladeCollectionExample = await client.getOrCreateCollection({
+  name: 'my_collection',
+  schema: spladeSchema,
+});
 ```
 
 ## Choosing an index strategy
@@ -153,4 +145,3 @@ spladeSchema.createIndex(
 | General semantic search | Dense embeddings only (default) |
 | Search with important keywords | Dense + BM25 hybrid |
 | Best quality hybrid search | Dense + SPLADE hybrid |
-| Exact term matching required | Include BM25 alongside other indexes |
