@@ -1,18 +1,20 @@
 # @snippet:imports
 from typing import cast
 from chromadb import Schema, VectorIndexConfig, SparseVectorIndexConfig, K
-from chromadb.utils.embedding_functions import OpenAIEmbeddingFunction
 from chromadb.utils.embedding_functions import ChromaCloudSpladeEmbeddingFunction
 from chromadb.utils.embedding_functions import ChromaBm25EmbeddingFunction
+from chromadb.utils.embedding_functions import ChromaCloudQwenEmbeddingFunction
+from chromadb.utils.embedding_functions.chroma_cloud_qwen_embedding_function import ChromaCloudQwenEmbeddingModel
 # @end
 
 # @snippet:basic-example
 basic_schema = Schema()
 
 # Configure vector index with custom embedding function
-embedding_function = OpenAIEmbeddingFunction(
-    api_key="your-api-key",
-    model_name="text-embedding-3-small"
+embedding_function = ChromaCloudQwenEmbeddingFunction(
+    model=ChromaCloudQwenEmbeddingModel.QWEN3_EMBEDDING_0p6B,
+    task=None,
+    api_key_env_var="CHROMA_API_KEY"
 )
 
 basic_schema.create_index(config=VectorIndexConfig(
@@ -27,9 +29,10 @@ splade_schema = Schema()
 SPARSE_SPLADE_KEY = "sparse_splade"
 
 # Configure vector index with custom embedding function
-dense_embedding_function = OpenAIEmbeddingFunction(
-    api_key="your-api-key",
-    model_name="text-embedding-3-small"
+dense_embedding_function = ChromaCloudQwenEmbeddingFunction(
+    model=ChromaCloudQwenEmbeddingModel.QWEN3_EMBEDDING_0p6B,
+    task=None,
+    api_key_env_var="CHROMA_API_KEY"
 )
 
 splade_schema.create_index(config=VectorIndexConfig(
@@ -50,14 +53,15 @@ bm25_schema = Schema()
 SPARSE_BM25_KEY = "sparse_bm25"
 
 # Configure vector index with custom embedding function
-bm25_dense_embedding_function = OpenAIEmbeddingFunction(
-    api_key="your-api-key",
-    model_name="text-embedding-3-small"
+dense_embedding_function = ChromaCloudQwenEmbeddingFunction(
+    model=ChromaCloudQwenEmbeddingModel.QWEN3_EMBEDDING_0p6B,
+    task=None,
+    api_key_env_var="CHROMA_API_KEY"
 )
 
 bm25_schema.create_index(config=VectorIndexConfig(
     space="cosine",
-    embedding_function=bm25_dense_embedding_function
+    embedding_function=dense_embedding_function
 ))
 
 bm25_embedding_function = ChromaBm25EmbeddingFunction()

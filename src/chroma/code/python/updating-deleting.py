@@ -4,12 +4,14 @@ import time
 from typing import TypedDict
 
 import chromadb
-from chromadb.utils.embedding_functions import OpenAIEmbeddingFunction
+from chromadb.utils.embedding_functions import ChromaCloudQwenEmbeddingFunction
+from chromadb.utils.embedding_functions.chroma_cloud_qwen_embedding_function import ChromaCloudQwenEmbeddingModel
 
 client = chromadb.Client()
-embedding_function = OpenAIEmbeddingFunction(
-    api_key=os.getenv("OPENAI_API_KEY"),
-    model_name="text-embedding-3-small",
+embedding_function = ChromaCloudQwenEmbeddingFunction(
+    model=ChromaCloudQwenEmbeddingModel.QWEN3_EMBEDDING_0p6B,
+    task=None,
+    api_key_env_var="CHROMA_API_KEY"
 )
 # @end
 
@@ -49,7 +51,6 @@ collection.update(
 # @end
 
 # @snippet:upsert
-
 collection2 = client.get_or_create_collection(
     name="articles",
     embedding_function=embedding_function,

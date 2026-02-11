@@ -3,7 +3,8 @@ import os
 
 import chromadb
 from chromadb.api.types import Embeddings, ID, IDs, Document, Metadata, Include, EmbeddingFunction, Embeddable
-from chromadb.utils.embedding_functions import OpenAIEmbeddingFunction
+from chromadb.utils.embedding_functions import ChromaCloudQwenEmbeddingFunction
+from chromadb.utils.embedding_functions.chroma_cloud_qwen_embedding_function import ChromaCloudQwenEmbeddingModel
 from typing import List, Optional, TypedDict, cast
 
 client = chromadb.CloudClient(
@@ -14,9 +15,10 @@ client = chromadb.CloudClient(
 # @end
 
 # @snippet:query-method
-embedding_function = OpenAIEmbeddingFunction(
-	api_key="your-openai-api-key",
-	model_name="text-embedding-3-large"
+embedding_function = ChromaCloudQwenEmbeddingFunction(
+    model=ChromaCloudQwenEmbeddingModel.QWEN3_EMBEDDING_0p6B,
+    task=None,
+    api_key_env_var="CHROMA_API_KEY"
 )
 
 collection = client.get_or_create_collection(name="my_collection", embedding_function=cast(EmbeddingFunction[Embeddable], embedding_function))
@@ -27,9 +29,10 @@ collection.query(
 # @end
 
 # @snippet:query-with-options
-embedding_function = OpenAIEmbeddingFunction(
-	api_key="your-openai-api-key",
-	model_name="text-embedding-3-large"
+embedding_function = ChromaCloudQwenEmbeddingFunction(
+    model=ChromaCloudQwenEmbeddingModel.QWEN3_EMBEDDING_0p6B,
+    task=None,
+    api_key_env_var="CHROMA_API_KEY"
 )
 
 collection = client.get_or_create_collection(name="my_collection", embedding_function=cast(EmbeddingFunction[Embeddable], embedding_function))

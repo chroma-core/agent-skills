@@ -13,7 +13,6 @@
     "@chroma-core/chroma-cloud-qwen": "^0.1.10",
     "@chroma-core/chroma-cloud-splade": "^0.1.10",
     "@chroma-core/default-embed": "^0.1.9",
-    "@chroma-core/openai": "^0.1.9",
     "@types/node": "^25.0.9",
     "chromadb": "^3.2.2",
     "chromadb-default-embed": "^2.14.0"

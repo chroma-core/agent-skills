@@ -1,10 +1,13 @@
 // @snippet:imports
 import { ChromaBm25EmbeddingFunction } from '@chroma-core/chroma-bm25';
 import {
+  ChromaCloudQwenEmbeddingFunction,
+  ChromaCloudQwenEmbeddingModel,
+} from '@chroma-core/chroma-cloud-qwen';
+import {
   ChromaCloudSpladeEmbeddingFunction,
   ChromaCloudSpladeEmbeddingModel,
 } from '@chroma-core/chroma-cloud-splade';
-import { OpenAIEmbeddingFunction } from '@chroma-core/openai';
 import {
   K,
   Schema,
@@ -16,10 +19,10 @@ import {
 // @snippet:basic-example
 const basicSchema = new Schema();
 
-// Configure vector index with custom embedding function
-const embeddingFunction = new OpenAIEmbeddingFunction({
-  apiKey: process.env.OPENAI_API_KEY,
-  modelName: 'text-embedding-3-small',
+const embeddingFunction = new ChromaCloudQwenEmbeddingFunction({
+  model: ChromaCloudQwenEmbeddingModel.QWEN3_EMBEDDING_0p6B,
+  task: null,
+  apiKeyEnvVar: 'CHROMA_API_KEY',
 });
 
 basicSchema.createIndex(
@@ -35,9 +38,10 @@ const spladeSchema = new Schema();
 const SPARSE_SPLADE_KEY = 'splade_key';
 
 // Configure vector index with both sparse and dense embeddings
-const denseEmbeddingFunction = new OpenAIEmbeddingFunction({
-  apiKey: process.env.OPENAI_API_KEY,
-  modelName: 'text-embedding-3-small',
+const denseEmbeddingFunction = new ChromaCloudQwenEmbeddingFunction({
+  model: ChromaCloudQwenEmbeddingModel.QWEN3_EMBEDDING_0p6B,
+  task: null,
+  apiKeyEnvVar: 'CHROMA_API_KEY',
 });
 
 spladeSchema.createIndex(
@@ -66,15 +70,16 @@ const bm25Schema = new Schema();
 const SPARSE_BM25_KEY = 'bm25_key';
 
 // Configure vector index with both sparse and dense embeddings
-const bm25DenseEmbeddingFunction = new OpenAIEmbeddingFunction({
-  apiKey: process.env.OPENAI_API_KEY,
-  modelName: 'text-embedding-3-small',
+const bm25ExampleEmbeddingFunction = new ChromaCloudQwenEmbeddingFunction({
+  model: ChromaCloudQwenEmbeddingModel.QWEN3_EMBEDDING_0p6B,
+  task: null,
+  apiKeyEnvVar: 'CHROMA_API_KEY',
 });
 
 bm25Schema.createIndex(
   new VectorIndexConfig({
     space: 'cosine',
-    embeddingFunction: bm25DenseEmbeddingFunction,
+    embeddingFunction: bm25ExampleEmbeddingFunction,
   })
 );
 

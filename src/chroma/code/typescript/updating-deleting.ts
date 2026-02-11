@@ -1,11 +1,15 @@
 // @snippet:imports
 import { ChromaClient } from 'chromadb';
-import { OpenAIEmbeddingFunction } from '@chroma-core/openai';
+import {
+  ChromaCloudQwenEmbeddingFunction,
+  ChromaCloudQwenEmbeddingModel,
+} from '@chroma-core/chroma-cloud-qwen';
 
 const client = new ChromaClient();
-const embeddingFunction = new OpenAIEmbeddingFunction({
-  apiKey: process.env.OPENAI_API_KEY,
-  modelName: 'text-embedding-3-small',
+const embeddingFunction = new ChromaCloudQwenEmbeddingFunction({
+  model: ChromaCloudQwenEmbeddingModel.QWEN3_EMBEDDING_0p6B,
+  task: null,
+  apiKeyEnvVar: 'CHROMA_API_KEY',
 });
 // @end
 
@@ -180,8 +184,18 @@ async function syncToChroma(
 
 // Example usage
 const changedRecords: SourceRecord[] = [
-  { id: '1', content: 'Article about TypeScript', updated_at: Date.now(), category: 'tech' },
-  { id: '2', content: 'Guide to vector databases', updated_at: Date.now(), category: 'tech' },
+  {
+    id: '1',
+    content: 'Article about TypeScript',
+    updated_at: Date.now(),
+    category: 'tech',
+  },
+  {
+    id: '2',
+    content: 'Guide to vector databases',
+    updated_at: Date.now(),
+    category: 'tech',
+  },
 ];
 
 const deletedRecordIds = ['old-1', 'old-2'];
