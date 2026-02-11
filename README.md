@@ -8,7 +8,7 @@ Official AI Agent skills from the Chroma team for building with Chroma.
 npx skills add chroma-core/agent-skills --skill "chroma"
 ```
 
-The Chroma skill is able to help you integrate Chroma into your project and give you agent deeper understanding of Chroma's APIs.
+The Chroma skill is able to help you integrate Chroma into your TypeScript or Python project and give you agent deeper understanding of Chroma's APIs.
 
 Simply tell your agent `Add search to my project with Chroma`, the agent will ask you a few questions about how you want Chroma configured then get to work.
 
