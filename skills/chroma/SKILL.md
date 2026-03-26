@@ -183,6 +183,7 @@ If you need more detailed information about Chroma beyond what's covered in this
 - [Chroma Regex Filtering](./regex/typescript.md) - Learn how to use regex filters in Chroma queries
 - [Query and Get](./querying/typescript.md) - Query and Get Data from Chroma Collections
 - [Schema](./schema/typescript.md) - Schema() configures collections with multiple indexes
+- [Metadata Arrays](./metadata-arrays/typescript.md) - Store and query arrays of strings, numbers, and booleans in metadata fields
 - [Updating and Deleting](./updating-deleting/typescript.md) - Update existing documents and delete data from collections
 - [Error Handling](./error-handling/typescript.md) - Handling errors and failures when working with Chroma
 - [Local Chroma](./local-chroma/typescript.md) - How to run and use local chroma
@@ -193,6 +194,7 @@ If you need more detailed information about Chroma beyond what's covered in this
 - [Chroma Regex Filtering](./regex/python.md) - Learn how to use regex filters in Chroma queries
 - [Query and Get](./querying/python.md) - Query and Get Data from Chroma Collections
 - [Schema](./schema/python.md) - Schema() configures collections with multiple indexes
+- [Metadata Arrays](./metadata-arrays/python.md) - Store and query arrays of strings, numbers, and booleans in metadata fields
 - [Updating and Deleting](./updating-deleting/python.md) - Update existing documents and delete data from collections
 - [Error Handling](./error-handling/python.md) - Handling errors and failures when working with Chroma
 - [Local Chroma](./local-chroma/python.md) - How to run and use local chroma

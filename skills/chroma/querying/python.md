@@ -155,6 +155,7 @@ Chroma supports these operators in `where` clauses:
 - **Equality:** `$eq` (default if just a value), `$ne`
 - **Comparison:** `$gt`, `$gte`, `$lt`, `$lte`
 - **Set membership:** `$in`, `$nin`
+- **Array:** `$contains`, `$not_contains` (for metadata fields that hold arrays)
 - **Logical:** `$and`, `$or`
 
 Filters can be nested and combined for complex queries. Metadata filtering is much faster than post-processing results in application code.
