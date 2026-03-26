@@ -187,6 +187,7 @@ If you need more detailed information about Chroma beyond what's covered in this
 - [Updating and Deleting](./updating-deleting/typescript.md) - Update existing documents and delete data from collections
 - [Error Handling](./error-handling/typescript.md) - Handling errors and failures when working with Chroma
 - [Local Chroma](./local-chroma/typescript.md) - How to run and use local chroma
+- [Collection Forking](./forking/typescript.md) - Instantly duplicate collections using copy-on-write forking in Chroma Cloud
 - [Search() API](./search-api/typescript.md) - An expressive and flexible API for doing dense and sparse vector search on collections, as well as hybrid search
 
 ### Python
@@ -198,6 +199,7 @@ If you need more detailed information about Chroma beyond what's covered in this
 - [Updating and Deleting](./updating-deleting/python.md) - Update existing documents and delete data from collections
 - [Error Handling](./error-handling/python.md) - Handling errors and failures when working with Chroma
 - [Local Chroma](./local-chroma/python.md) - How to run and use local chroma
+- [Collection Forking](./forking/python.md) - Instantly duplicate collections using copy-on-write forking in Chroma Cloud
 - [Search() API](./search-api/python.md) - An expressive and flexible API for doing dense and sparse vector search on collections, as well as hybrid search
 
 ## General
