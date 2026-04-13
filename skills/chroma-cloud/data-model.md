@@ -5,53 +5,17 @@ description: An overview of how Chroma stores data
 
 ## Data Model
 
-Understanding how Chroma stores data helps you design effective search systems.
+Use this reference when designing collection layout, chunking, IDs, metadata, and filtering for Chroma.
 
 ### Core concepts
 
 **Collections** are the top-level containers, similar to tables in a relational database. Each collection has its own embedding configuration and indexes.
 
 **Documents** are the searchable units within a collection. Each document has:
-- **ID** - A unique string identifier (up to 128 bytes)
-- **Content** - The text that gets embedded and searched (max 16KB, recommended under 8KB)
-- **Embedding** - The vector representation (max 4096 dimensions; common sizes are 384, 768, 1536, or 3072)
-- **Metadata** - Key-value pairs for filtering (max 4KB total, up to 32 keys with 36-byte key names)
-
-### Limits
-
-#### Document limits (add/upsert)
-
-| Property | Limit | Notes |
-|----------|-------|-------|
-| ID | 128 bytes | |
-| Content | 16,384 bytes | Recommend < 8,000 |
-| Embedding dimensions | 4,096 | Most models: 384, 768, 1536, or 3072 |
-| Metadata size | 4,096 bytes | |
-| Metadata keys | 32 max | Key names up to 36 bytes |
-| URI | 256 bytes | Rarely used |
-
-#### Query / Get / Delete limits
-
-| Property | Limit |
-|----------|-------|
-| ID | 128 bytes |
-| Results returned (query) | 300 max |
-| Where predicates | 8 max |
-| Where size | 4,096 bytes |
-| Where document predicates | 8 max |
-| Where document size | 130 bytes |
-
-#### Collection metadata limits
-
-Collection-level metadata has stricter limits than document metadata:
-
-| Property | Limit |
-|----------|-------|
-| Metadata size | 256 bytes |
-| Metadata keys | 16 max |
-| Key size | 36 bytes |
-
-Chroma Cloud users can request quota increases through the dashboard.
+- **ID** - A unique string identifier
+- **Content** - The text that gets embedded and searched
+- **Embedding** - The vector representation
+- **Metadata** - Key-value pairs for filtering
 
 ## Chunking
 
@@ -59,19 +23,17 @@ Most real-world data is too large to fit in a single document. Chunking splits c
 
 ### Chunking strategy
 
-**Recommended chunk size:** Under 8,000 bytes. This balances search precision with context.
+**Recommended chunk size:** Keep chunks comfortably below product limits and small enough to preserve search precision and context. Generally, 8KB or less is a good default starting point.
 
 **Good chunking preserves meaning:**
 - Split at natural boundaries (paragraphs, sentences, sections)
 - Don't cut mid-sentence or mid-word
 - Include enough context for the chunk to be meaningful on its own
 
-**Ask the user:**
+**Determine from the repo or ask if ambiguous:**
 - What type of content are they indexing?
 - Are there natural boundaries (chapters, sections, records)?
 - How much context does a search result need to be useful?
-
-**Chonkie** is a popular chunking library available for both Python and TypeScript.
 
 ### Tracking chunks with metadata
 
@@ -93,9 +55,7 @@ This approach is better than encoding information in the document ID because:
 
 ## Collection organization
 
-### One collection per tenant
-
-For multi-tenant applications, create separate collections per tenant (customer, team, user) rather than one large collection with tenant metadata.
+For multi-tenant applications, separate collections per tenant are a strong default when isolation, deletion, and search quality matter more than minimizing collection count.
 
 **Why this works better:**
 - Nearest neighbor search is more accurate with fewer candidates
@@ -105,7 +65,7 @@ For multi-tenant applications, create separate collections per tenant (customer,
 
 **Example:** A knowledge base SaaS might have collections like `kb_customer_123`, `kb_customer_456`, etc.
 
-**Ask the user:** What's the smallest logical unit of data isolation in their application?
+**Determine from the repo or ask if ambiguous:** What's the smallest logical unit of data isolation in their application?
 
 ## Filtering
 
@@ -122,6 +82,7 @@ Metadata filtering reduces the candidate set before vector search runs, making q
 | `$in` | In list | string, int |
 | `$nin` | Not in list | string, int |
 | `$and`, `$or` | Logical combinators | filter arrays |
+| `$contains`, `$not_contains` | Check within arrays | arrays of string, int, bool |
 
 ### Document content filtering
 

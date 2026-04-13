@@ -1,38 +1,52 @@
 ---
 name: chroma-local
-description: Provides expertise on local and open source Chroma integration for semantic search applications. Use when the user is running Chroma themselves, using `ChromaClient`, `EphemeralClient` (python only) or `HttpClient`, needs local persistence, or wants OSS Chroma without Chroma Cloud features.
+description: Use when the user needs self-hosted or local Chroma for semantic search, including `ChromaClient`, `HttpClient`, or Python `EphemeralClient`, local persistence, Docker or `chroma run`, or OSS Chroma without Chroma Cloud features.
 ---
 
 ## Instructions
 
-### Before writing any code, gather this information:
+Determine these before writing code. Prefer discovering them from the repo and the user request. Ask only when the choice materially changes the implementation.
 
-1. **Runtime shape**: Are they connecting to a running local server, embedding Chroma into tests, or setting up local development from scratch?
-   - Determine whether they need `chroma run`, a Docker/service command, or just client code
-   - There is the python ephemeral mode, which runs a chroma server in the process, but all data is lost when the process ends.
+1. **Runtime shape**
+   - Are they connecting to a running local server, embedding Chroma into tests, or setting up local development from scratch?
+   - Decide whether they need `chroma run`, a Docker or service command, `HttpClient` or `ChromaClient`, or Python `EphemeralClient`.
 
-2. **Persistence**: Persistent local storage or disposable data?
-   - Persistent: choose a stable data path
-   - Disposable: okay to use defaults or a temp/test directory
+2. **Persistence**
+   - Persistent local data: choose an intentional data path.
+   - Disposable test data: use defaults or a temp directory.
 
-3. **Embedding model**: Which provider/model?
-   - Default: `@chroma-core/default-embed` (TypeScript) or built-in (Python)
-   - OpenAI: `text-embedding-3-large` is most popular, requires `@chroma-core/openai` in TypeScript
-   - Ask the user if they have a preference or existing provider
+3. **Embedding model**
+   - Reuse the app's existing embedding provider when possible.
+   - Otherwise default to `@chroma-core/default-embed` in TypeScript or the standard local default in Python.
+   - If the user explicitly wants OpenAI embeddings in TypeScript, install and use `@chroma-core/openai`.
 
-4. **Data structure**: What are they indexing?
-   - Needed to determine chunking strategy
-   - Needed to design metadata schema for filtering
+4. **Indexed data shape**
+   - Determine what is being indexed, how it should be chunked, and what metadata is needed for filtering and updates.
 
-### Decision workflow
+## Routing
 
-- User wants to add search / retrieval
-- Confirm whether a local Chroma server already exists
-- Discover what or pick an embedding model
-- Discover or design metadata schema
-- Implement data sync strategy (batching, upserts, deletes)
+- **Existing local server**
+  - Confirm host and port before changing client code.
+  - Validate the server is reachable before assuming collections are missing.
 
-### When to ask questions vs proceed
+- **Fresh local development**
+  - Add a local startup path such as `chroma run` or the repo's existing Docker or service command.
+  - Default to `localhost:8000` unless the repo already uses another address.
+
+- **Python tests or disposable local workflows**
+  - Prefer `EphemeralClient` when persistence is unnecessary.
+  - Call out that data is lost when the process exits.
+
+- **Persistent local development**
+  - Use a stable data path and make persistence explicit in code or config.
+  - Do not silently switch between ephemeral and persistent modes.
+
+- **Search integration work**
+  - Use `getOrCreateCollection()` in TypeScript or `get_or_create_collection()` in Python.
+  - Design document IDs and metadata so upserts and deletes are straightforward.
+  - Batch writes when syncing large datasets.
+
+## Ask vs proceed
 
 **Ask first:**
 - Embedding model choice (cost and quality implications)
@@ -45,28 +59,33 @@ description: Provides expertise on local and open source Chroma integration for 
 - Use cosine similarity (most common)
 - Chunk size under 8KB
 - Store source IDs in metadata for updates/deletes
-- Use a local server on `localhost:8000` unless the repo already configures another address or is using EphemeralClient (python only)
+- Use a local server on `localhost:8000` unless the repo already configures another address or is using Python `EphemeralClient`
 
-### What to validate
+## What to validate
 
 - Correct client import (`ChromaClient`, `HttpClient`, or `Client`)
 - Embedding function package is installed (TypeScript)
 - Local server is reachable before assuming collections are missing
 - Local path and persistence mode are intentional
 
-## Quick Start
+## Implementation notes
 
-### Local Chroma Setup
+- Local Chroma is the right default for development, tests, and self-hosted deployments.
+- OSS Chroma does not include Chroma Cloud-only features such as `Schema()` and `Search()`.
+- If the user asks for hybrid dense and sparse retrieval, treat that as a likely Chroma Cloud requirement unless the repo already implements an OSS workaround.
+- For open source Chroma, dense retrieval with a single embedding function is the normal baseline.
 
-Start a local Chroma server:
+## Minimal patterns
+
+Start a local Chroma server when the repo needs one:
 
 ```bash
 chroma run
 ```
 
-By default this listens on `localhost:8000`.
+Default address: `localhost:8000`.
 
-**TypeScript (local Chroma):**
+TypeScript local client:
 
 ```typescript
 import { ChromaClient } from 'chromadb';
@@ -93,7 +112,7 @@ const results = await collection.query({
 });
 ```
 
-**Python (local Chroma):**
+Python local client:
 
 ```python
 import chromadb
@@ -115,33 +134,6 @@ results = collection.query(
 )
 ```
 
-### Local-specific guidance
-
-Chroma is a database.
-A Chroma database contains collections.
-A collection contains documents.
-Each document has an ID, the document text, the vector embedding and metadata.
-
-Unlike tables in a relational database, collections are created and destroyed at the application level. Each Chroma database can have millions of collections. There may be a collection for each user, or team or organization. Rather than tables be partitioned by some key, the partition in Chroma is the collection. 
-
-Collections don't have rows, they have documents, the document is the text data that is to be searched. When data is created or updated, the client will create an embedding of the data. This is done on the client side based on the embedding function(s) provided to the client. To create the embedding the client will use its configuration to call out to the defined embedding model provider via the embedding function.
-
-Further partitioning or filtering data is done with document metadata. Each document has a key/value object of metadata. keys are strings and values can be strings, ints or booleans or an array of any of those types. There are a variety of operators on the metadata.
-
-During query time, the query text is embedded using the collection's defined embedding function and then is sent to Chroma with the rest of the query parameters. Chroma will then consider any query parameters like metadata filters to reduce the potential result set, then search for the nearest neighbors using a distance algorithm between the query vector and the index of vectors in the collection that is being queried.
-
-Working with collections is made easy by using the `get_or_create_collection()` (`getOrCreateCollection()` in TypeScript) on the Chroma client, preventing annoying boilerplate code.
-
-Local Chroma is the right default for development, tests, and self-hosted deployments. It does not include Chroma Cloud-only features like `Schema()` and `Search()`. If the user asks for hybrid dense+sparse retrieval they need to use Chroma Cloud.
-
-### Embeddings
-
-When working with embedding functions, the default embedding function is a good local default. If the user already has another embedding provider in their app, prefer reusing it so dimensions and operational dependencies stay consistent.
-
-In TypeScript, you need to install a package for each embedding function, install the correct one based on what the user says.
-
-For open source Chroma, dense search with a single embedding function is the standard setup.
-
 ## Learn More
 
-If you need more detailed information about Chroma beyond what's covered in this skill, fetch Chroma's llms.txt for comprehensive documentation: https://docs.trychroma.com/llms.txt
+Fetch Chroma's `llms.txt` only when you need API or product details that are not already in the repo or this skill: https://docs.trychroma.com/llms.txt

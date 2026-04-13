@@ -5,7 +5,7 @@ description: Learn how to use regex filters in Chroma queries
 
 ## Regex Filtering in Chroma
 
-Chroma supports regex filtering on document content and metadata. This is useful when you need exact pattern matching that semantic search can't provide.
+Chroma supports regex filtering on document content. This is useful when you need exact pattern matching that semantic search can't provide.
 
 ### When to use regex vs semantic search
 
@@ -19,7 +19,6 @@ Chroma supports regex filtering on document content and metadata. This is useful
 - Looking for conceptually similar content regardless of exact wording
 - The user's query is natural language
 - You want to find related content even if it uses different terminology
-
 
 You can combine both: use regex to narrow results, then rank by semantic similarity.
 
@@ -35,7 +34,7 @@ Use the `$regex` operator in `where_document` to match document content against 
 
 ### Combining regex with metadata filters
 
-Regex filters can be combined with metadata filters using `$and` and `$or` operators. This is powerful for narrowing results by both content patterns and structured metadata.
+Regex filters can be combined with metadata filters using `$and` and `$or` operators. This is powerful for narrowing results by both content patterns and structured metadata. Note however regex can not be used on metadata string values.
 
 {{CODE:combined-filters}}
 
