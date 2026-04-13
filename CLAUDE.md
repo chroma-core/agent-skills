@@ -30,22 +30,30 @@ uv venv .venv && uv pip install -r requirements.txt
 
 The build process (`scripts/build-skills.ts`) transforms source files into distributable skills:
 
-1. **Source location**: `src/<skill>/` contains templates, code examples, and general docs
-2. **Output location**: `skills/<skill>/` contains the built skill files
-3. **Template processing**: Templates in `src/<skill>/templates/*.md` contain `{{CODE:snippet-name}}` placeholders
-4. **Code snippets**: Code files in `src/<skill>/code/{typescript,python}/` define snippets with `@snippet:name` and `@end` markers
-5. **Build output**: Each template generates two files: `skills/<skill>/<topic>/typescript.md` and `python.md`
+1. **Source location**: `src/<skill>/` contains skill-specific docs, templates, and code examples
+2. **Composable sources**: `src/<skill>/skill.json` can list layered source directories like `["chroma-shared", "chroma-local"]`
+3. **Shared content**: `src/chroma-shared/` contains docs and templates reused by multiple skills
+4. **Override order**: Later source directories override earlier ones when they define the same template or general doc
+5. **Output location**: `skills/<skill>/` contains the built skill files
+5. **Template processing**: Templates in `templates/*.md` contain `{{CODE:snippet-name}}` placeholders
+6. **Code snippets**: Code files in `code/{typescript,python}/` define snippets with `@snippet:name` and `@end` markers
+7. **Build output**: Each template generates two files: `skills/<skill>/<topic>/typescript.md` and `python.md`
 
 ### Directory Structure
 
 ```
+src/chroma-shared/
+├── templates/         # Shared markdown templates with {{CODE:*}} placeholders
+└── general/           # Shared language-agnostic docs
+
 src/<skill>/
+├── skill.json         # Optional layered source config
 ├── SKILL.md           # Main skill description (copied to output with topic list appended)
-├── templates/         # Markdown templates with {{CODE:*}} placeholders
+├── templates/         # Skill-specific markdown templates
 ├── code/
 │   ├── typescript/    # .ts files with @snippet markers
 │   └── python/        # .py files with @snippet markers
-└── general/           # Language-agnostic docs (copied directly to output)
+└── general/           # Skill-specific language-agnostic docs
 
 skills/<skill>/        # Built output (generated, don't edit directly)
 ```

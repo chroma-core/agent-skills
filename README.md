@@ -5,12 +5,13 @@ Official AI Agent skills from the Chroma team for building with Chroma.
 ## Installation
 
 ```sh
-npx skills add chroma-core/agent-skills --skill "chroma"
+npx skills add chroma-core/agent-skills --skill "chroma-local"
+npx skills add chroma-core/agent-skills --skill "chroma-cloud"
 ```
 
-The Chroma skill is able to help you integrate Chroma into your TypeScript or Python project and give you agent deeper understanding of Chroma's APIs.
+`chroma-local` helps with open source and self-hosted Chroma. `chroma-cloud` helps with Chroma Cloud, including CloudClient, Schema, Search, and cloud CLI workflows.
 
-Simply tell your agent `Add search to my project with Chroma`, the agent will ask you a few questions about how you want Chroma configured then get to work.
+Simply tell your agent `Add search to my project with Chroma local` or `Add hybrid search with Chroma Cloud`, and the matching skill will guide the integration.
 
 Check out the [Chroma docs](https://docs.trychroma.com) for more details about Chroma.
 

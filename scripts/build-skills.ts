@@ -1,4 +1,12 @@
-import { readdir, readFile, writeFile, mkdir, copyFile } from "node:fs/promises";
+import {
+  readdir,
+  readFile,
+  writeFile,
+  mkdir,
+  copyFile,
+  rm,
+  access,
+} from "node:fs/promises";
 import { join } from "node:path";
 
 const SRC_DIR = "src";
@@ -15,6 +23,15 @@ interface TemplateInfo {
   name: string;
   description: string;
   fileName: string;
+}
+
+interface SourceFileInfo {
+  source: string;
+  path: string;
+}
+
+interface SkillConfig {
+  sources?: string[];
 }
 
 function parseFrontmatter(content: string): { name: string; description: string } {
@@ -76,49 +93,105 @@ function replaceCodePlaceholders(
 
 async function getSkillDirs(): Promise<string[]> {
   const entries = await readdir(SRC_DIR, { withFileTypes: true });
-  return entries.filter((e) => e.isDirectory()).map((e) => e.name);
+  const skillDirs: string[] = [];
+
+  for (const entry of entries) {
+    if (!entry.isDirectory()) {
+      continue;
+    }
+
+    const skillJsonPath = join(SRC_DIR, entry.name, "skill.json");
+    const skillMdPath = join(SRC_DIR, entry.name, "SKILL.md");
+
+    if ((await fileExists(skillJsonPath)) || (await fileExists(skillMdPath))) {
+      skillDirs.push(entry.name);
+    }
+  }
+
+  return skillDirs;
 }
 
-async function getTemplates(skillDir: string): Promise<string[]> {
-  const templatesDir = join(SRC_DIR, skillDir, "templates");
+async function fileExists(path: string): Promise<boolean> {
   try {
-    const entries = await readdir(templatesDir);
-    return entries.filter((f) => f.endsWith(".md"));
+    await access(path);
+    return true;
   } catch {
-    return [];
+    return false;
   }
 }
 
+async function readSkillConfig(skillDir: string): Promise<SkillConfig> {
+  const configPath = join(SRC_DIR, skillDir, "skill.json");
+  if (!(await fileExists(configPath))) {
+    return {};
+  }
+
+  return JSON.parse(await readFile(configPath, "utf-8")) as SkillConfig;
+}
+
+async function getSkillSources(skillDir: string): Promise<string[]> {
+  const config = await readSkillConfig(skillDir);
+  return config.sources ?? [skillDir];
+}
+
+async function getSourceFiles(
+  sources: string[],
+  kind: "templates" | "general"
+): Promise<Map<string, SourceFileInfo>> {
+  const files = new Map<string, SourceFileInfo>();
+
+  for (const source of sources) {
+    const dir = join(SRC_DIR, source, kind);
+    try {
+      const entries = await readdir(dir);
+      for (const entry of entries) {
+        if (entry.endsWith(".md")) {
+          files.set(entry, {
+            source,
+            path: join(dir, entry),
+          });
+        }
+      }
+    } catch {
+      // Source does not have this directory.
+    }
+  }
+
+  return files;
+}
+
 async function loadSnippets(
-  skillDir: string,
+  sources: string[],
+  templateSource: string,
   language: Language,
   templateName: string
 ): Promise<Map<string, string>> {
   const ext = LANG_EXTENSIONS[language];
-  const codeFile = join(
-    SRC_DIR,
-    skillDir,
-    "code",
-    language,
-    templateName.replace(".md", `.${ext}`)
-  );
+  const fileName = templateName.replace(".md", `.${ext}`);
+  const candidateSources = [
+    templateSource,
+    ...sources.filter((source) => source !== templateSource).reverse(),
+  ];
 
-  try {
-    const content = await readFile(codeFile, "utf-8");
-    return parseSnippets(content);
-  } catch {
-    console.warn(`Warning: Code file not found: ${codeFile}`);
-    return new Map();
+  for (const source of candidateSources) {
+    const codeFile = join(SRC_DIR, source, "code", language, fileName);
+    if (await fileExists(codeFile)) {
+      const content = await readFile(codeFile, "utf-8");
+      return parseSnippets(content);
+    }
   }
+
+  console.warn(`Warning: Code file not found for ${language}: ${fileName}`);
+  return new Map();
 }
 
 async function buildSkill(skillDir: string): Promise<TemplateInfo[]> {
-  const templates = await getTemplates(skillDir);
+  const sources = await getSkillSources(skillDir);
+  const templates = await getSourceFiles(sources, "templates");
   const templateInfos: TemplateInfo[] = [];
 
-  for (const templateFile of templates) {
-    const templatePath = join(SRC_DIR, skillDir, "templates", templateFile);
-    const template = await readFile(templatePath, "utf-8");
+  for (const [templateFile, templateInfo] of templates) {
+    const template = await readFile(templateInfo.path, "utf-8");
     const topicName = templateFile.replace(".md", "");
 
     // Parse frontmatter for template info
@@ -126,8 +199,18 @@ async function buildSkill(skillDir: string): Promise<TemplateInfo[]> {
     templateInfos.push({ name, description, fileName: topicName });
 
     for (const language of LANGUAGES) {
-      const snippets = await loadSnippets(skillDir, language, templateFile);
-      const output = replaceCodePlaceholders(template, snippets, language, templatePath);
+      const snippets = await loadSnippets(
+        sources,
+        templateInfo.source,
+        language,
+        templateFile
+      );
+      const output = replaceCodePlaceholders(
+        template,
+        snippets,
+        language,
+        templateInfo.path
+      );
 
       const outputDir = join(OUTPUT_DIR, skillDir, topicName);
       await mkdir(outputDir, { recursive: true });
@@ -178,29 +261,22 @@ function generateSkillList(
 }
 
 async function copyGeneralMarkdownFiles(skillDir: string): Promise<GeneralFileInfo[]> {
-  const generalDir = join(SRC_DIR, skillDir, "general");
   const outputDir = join(OUTPUT_DIR, skillDir);
   const generalFiles: GeneralFileInfo[] = [];
+  const sources = await getSkillSources(skillDir);
+  const generalMarkdownFiles = await getSourceFiles(sources, "general");
 
-  try {
-    const entries = await readdir(generalDir);
-    const mdFiles = entries.filter((f) => f.endsWith(".md"));
+  await mkdir(outputDir, { recursive: true });
 
-    await mkdir(outputDir, { recursive: true });
+  for (const [mdFile, sourceFile] of generalMarkdownFiles) {
+    const destPath = join(outputDir, mdFile);
 
-    for (const mdFile of mdFiles) {
-      const srcPath = join(generalDir, mdFile);
-      const destPath = join(outputDir, mdFile);
+    const content = await readFile(sourceFile.path, "utf-8");
+    const { name, description } = parseFrontmatter(content);
+    generalFiles.push({ name, description, fileName: mdFile });
 
-      const content = await readFile(srcPath, "utf-8");
-      const { name, description } = parseFrontmatter(content);
-      generalFiles.push({ name, description, fileName: mdFile });
-
-      await copyFile(srcPath, destPath);
-      console.log(`Copied: ${destPath}`);
-    }
-  } catch {
-    // No general directory, skip silently
+    await copyFile(sourceFile.path, destPath);
+    console.log(`Copied: ${destPath}`);
   }
 
   return generalFiles;
@@ -231,8 +307,19 @@ async function main(): Promise<void> {
   console.log("Building skills...\n");
 
   const skillDirs = await getSkillDirs();
+  const existingOutputEntries = await readdir(OUTPUT_DIR, { withFileTypes: true }).catch(() => []);
+
+  for (const entry of existingOutputEntries) {
+    if (entry.isDirectory() && !skillDirs.includes(entry.name)) {
+      const outputPath = join(OUTPUT_DIR, entry.name);
+      await rm(outputPath, { recursive: true, force: true });
+      console.log(`Removed stale output: ${outputPath}`);
+    }
+  }
 
   for (const skillDir of skillDirs) {
+    const outputPath = join(OUTPUT_DIR, skillDir);
+    await rm(outputPath, { recursive: true, force: true });
     const templates = await buildSkill(skillDir);
     const generalFiles = await copyGeneralMarkdownFiles(skillDir);
     await copySkillMd(skillDir, templates, generalFiles);
