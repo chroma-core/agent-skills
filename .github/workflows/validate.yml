@@ -1,0 +1,34 @@
+name: Validate
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Bun dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Set up Python virtual environment
+        run: |
+          python3 -m venv .venv
+          .venv/bin/pip install -r requirements.txt
+
+      - name: Run validation
+        run: bun run validate
