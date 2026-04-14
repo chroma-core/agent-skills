@@ -1,0 +1,206 @@
+{
+  "version": 1,
+  "skills": [
+    {
+      "name": "chroma-cloud",
+      "description": "Provides expertise on Chroma Cloud integration for semantic search and hybrid search applications. Use when the user is working with Chroma Cloud, CloudClient, managed collections, Schema(), Search(), hybrid search, or Chroma Cloud CLI workflows.",
+      "path": "chroma-cloud/SKILL.md",
+      "topics": [
+        {
+          "slug": "chroma-cloud-qwen",
+          "name": "Chroma Cloud Qwen",
+          "description": "Chroma's hosted Qwen embedding service",
+          "paths": {
+            "typescript": "chroma-cloud/chroma-cloud-qwen/typescript.md",
+            "python": "chroma-cloud/chroma-cloud-qwen/python.md"
+          }
+        },
+        {
+          "slug": "error-handling",
+          "name": "Error Handling",
+          "description": "Handling errors and failures when working with Chroma",
+          "paths": {
+            "typescript": "chroma-cloud/error-handling/typescript.md",
+            "python": "chroma-cloud/error-handling/python.md"
+          }
+        },
+        {
+          "slug": "forking",
+          "name": "Collection Forking",
+          "description": "Instantly duplicate collections using copy-on-write forking in Chroma Cloud",
+          "paths": {
+            "typescript": "chroma-cloud/forking/typescript.md",
+            "python": "chroma-cloud/forking/python.md"
+          }
+        },
+        {
+          "slug": "metadata",
+          "name": "Metadata",
+          "description": "Store and query metadata, including filters and array values",
+          "paths": {
+            "typescript": "chroma-cloud/metadata/typescript.md",
+            "python": "chroma-cloud/metadata/python.md"
+          }
+        },
+        {
+          "slug": "querying",
+          "name": "Query and Get",
+          "description": "Query and Get Data from Chroma Collections",
+          "paths": {
+            "typescript": "chroma-cloud/querying/typescript.md",
+            "python": "chroma-cloud/querying/python.md"
+          }
+        },
+        {
+          "slug": "regex",
+          "name": "Chroma Regex Filtering",
+          "description": "Learn how to use regex filters in Chroma queries",
+          "paths": {
+            "typescript": "chroma-cloud/regex/typescript.md",
+            "python": "chroma-cloud/regex/python.md"
+          }
+        },
+        {
+          "slug": "schema",
+          "name": "Schema",
+          "description": "Schema() configures collections with multiple indexes",
+          "paths": {
+            "typescript": "chroma-cloud/schema/typescript.md",
+            "python": "chroma-cloud/schema/python.md"
+          }
+        },
+        {
+          "slug": "search-api",
+          "name": "Search() API",
+          "description": "An expressive and flexible API for doing dense and sparse vector search on collections, as well as hybrid search",
+          "paths": {
+            "typescript": "chroma-cloud/search-api/typescript.md",
+            "python": "chroma-cloud/search-api/python.md"
+          }
+        },
+        {
+          "slug": "updating-deleting",
+          "name": "Updating and Deleting",
+          "description": "Update existing documents and delete data from collections",
+          "paths": {
+            "typescript": "chroma-cloud/updating-deleting/typescript.md",
+            "python": "chroma-cloud/updating-deleting/python.md"
+          }
+        }
+      ],
+      "general": [
+        {
+          "slug": "caching-collections",
+          "name": "Caching Collection References",
+          "description": "Reduce repeated collection lookup requests in high-traffic Chroma Cloud applications",
+          "path": "chroma-cloud/caching-collections.md"
+        },
+        {
+          "slug": "cli",
+          "name": "Chroma CLI",
+          "description": "Getting started with the Chroma CLI for Chroma Cloud authentication and database management",
+          "path": "chroma-cloud/cli.md"
+        },
+        {
+          "slug": "data-model",
+          "name": "Data Model",
+          "description": "An overview of how Chroma stores data",
+          "path": "chroma-cloud/data-model.md"
+        },
+        {
+          "slug": "quotas",
+          "name": "Quotas and Limits",
+          "description": "Chroma Cloud quotas and request limits",
+          "path": "chroma-cloud/quotas.md"
+        },
+        {
+          "slug": "understanding-a-codebase",
+          "name": "Integrating Chroma into an existing system",
+          "description": "Guidance for adding Chroma search to an existing application",
+          "path": "chroma-cloud/understanding-a-codebase.md"
+        }
+      ]
+    },
+    {
+      "name": "chroma-local",
+      "description": "Use when the user needs self-hosted or local Chroma for semantic search, including `ChromaClient`, `HttpClient`, or Python `EphemeralClient`, local persistence, Docker or `chroma run`, or OSS Chroma without Chroma Cloud features.",
+      "path": "chroma-local/SKILL.md",
+      "topics": [
+        {
+          "slug": "error-handling",
+          "name": "Error Handling",
+          "description": "Handling errors and failures when working with Chroma",
+          "paths": {
+            "typescript": "chroma-local/error-handling/typescript.md",
+            "python": "chroma-local/error-handling/python.md"
+          }
+        },
+        {
+          "slug": "local-chroma",
+          "name": "Local Chroma",
+          "description": "How to run and use local chroma",
+          "paths": {
+            "typescript": "chroma-local/local-chroma/typescript.md",
+            "python": "chroma-local/local-chroma/python.md"
+          }
+        },
+        {
+          "slug": "metadata",
+          "name": "Metadata",
+          "description": "Store and query metadata, including filters and array values",
+          "paths": {
+            "typescript": "chroma-local/metadata/typescript.md",
+            "python": "chroma-local/metadata/python.md"
+          }
+        },
+        {
+          "slug": "querying",
+          "name": "Query and Get",
+          "description": "Query and Get Data from Chroma Collections",
+          "paths": {
+            "typescript": "chroma-local/querying/typescript.md",
+            "python": "chroma-local/querying/python.md"
+          }
+        },
+        {
+          "slug": "regex",
+          "name": "Chroma Regex Filtering",
+          "description": "Learn how to use regex filters in Chroma queries",
+          "paths": {
+            "typescript": "chroma-local/regex/typescript.md",
+            "python": "chroma-local/regex/python.md"
+          }
+        },
+        {
+          "slug": "updating-deleting",
+          "name": "Updating and Deleting",
+          "description": "Update existing documents and delete data from collections",
+          "paths": {
+            "typescript": "chroma-local/updating-deleting/typescript.md",
+            "python": "chroma-local/updating-deleting/python.md"
+          }
+        }
+      ],
+      "general": [
+        {
+          "slug": "cli",
+          "name": "Chroma CLI",
+          "description": "Starting and managing a local open source Chroma server from the CLI",
+          "path": "chroma-local/cli.md"
+        },
+        {
+          "slug": "data-model",
+          "name": "Data Model",
+          "description": "An overview of how Chroma stores data",
+          "path": "chroma-local/data-model.md"
+        },
+        {
+          "slug": "understanding-a-codebase",
+          "name": "Integrating Chroma into an existing system",
+          "description": "Guidance for adding Chroma search to an existing application",
+          "path": "chroma-local/understanding-a-codebase.md"
+        }
+      ]
+    }
+  ]
+}

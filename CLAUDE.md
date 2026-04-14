@@ -38,6 +38,7 @@ The build process (`scripts/build-skills.ts`) transforms source files into distr
 5. **Template processing**: Templates in `templates/*.md` contain `{{CODE:snippet-name}}` placeholders
 6. **Code snippets**: Code files in `code/{typescript,python}/` define snippets with `@snippet:name` and `@end` markers
 7. **Build output**: Each template generates two files: `skills/<skill>/<topic>/typescript.md` and `python.md`
+8. **Registry output**: The build also generates `skills/registry.json`, a machine-readable index of built skills, topics, and general docs
 
 ### Directory Structure
 

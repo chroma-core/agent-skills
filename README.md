@@ -19,7 +19,7 @@ Check out the [Chroma docs](https://docs.trychroma.com) for more details about C
 
 ### Building
 
-There is a build step to compile the code examples for both python and typescript versions of the skill examples.
+There is a build step to compile the code examples for both python and typescript versions of the skill examples, and to generate `skills/registry.json` for consumers that need a machine-readable index of the built skills.
 
 ```sh
 bun run build

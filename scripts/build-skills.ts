@@ -34,6 +34,39 @@ interface SkillConfig {
   sources?: string[];
 }
 
+interface SkillInfo {
+  name: string;
+  description: string;
+  fileName: string;
+}
+
+interface RegistryTopic {
+  slug: string;
+  name: string;
+  description: string;
+  paths: Record<Language, string>;
+}
+
+interface RegistryGeneralFile {
+  slug: string;
+  name: string;
+  description: string;
+  path: string;
+}
+
+interface RegistrySkill {
+  name: string;
+  description: string;
+  path: string;
+  topics: RegistryTopic[];
+  general: RegistryGeneralFile[];
+}
+
+interface RegistryFile {
+  version: number;
+  skills: RegistrySkill[];
+}
+
 function transformSharedSnippetsForSkill(
   snippets: Map<string, string>,
   skillDir: string,
@@ -140,7 +173,7 @@ async function getSkillDirs(): Promise<string[]> {
     }
   }
 
-  return skillDirs;
+  return skillDirs.sort();
 }
 
 async function fileExists(path: string): Promise<boolean> {
@@ -319,6 +352,62 @@ async function copyGeneralMarkdownFiles(skillDir: string): Promise<GeneralFileIn
   return generalFiles;
 }
 
+async function readSkillInfo(skillDir: string): Promise<SkillInfo> {
+  const skillPath = join(SRC_DIR, skillDir, "SKILL.md");
+  const content = await readFile(skillPath, "utf-8");
+  const { name, description } = parseFrontmatter(content);
+
+  return {
+    name: name || skillDir,
+    description,
+    fileName: skillDir,
+  };
+}
+
+function buildRegistrySkill(
+  skill: SkillInfo,
+  templates: TemplateInfo[],
+  generalFiles: GeneralFileInfo[]
+): RegistrySkill {
+  const sortedTemplates = [...templates].sort((a, b) => a.fileName.localeCompare(b.fileName));
+  const sortedGeneralFiles = [...generalFiles].sort((a, b) =>
+    a.fileName.localeCompare(b.fileName)
+  );
+
+  return {
+    name: skill.name,
+    description: skill.description,
+    path: `${skill.fileName}/SKILL.md`,
+    topics: sortedTemplates.map((template) => ({
+      slug: template.fileName,
+      name: template.name,
+      description: template.description,
+      paths: {
+        typescript: `${skill.fileName}/${template.fileName}/typescript.md`,
+        python: `${skill.fileName}/${template.fileName}/python.md`,
+      },
+    })),
+    general: sortedGeneralFiles.map((file) => ({
+      slug: file.fileName.replace(".md", ""),
+      name: file.name,
+      description: file.description,
+      path: `${skill.fileName}/${file.fileName}`,
+    })),
+  };
+}
+
+async function writeRegistry(registrySkills: RegistrySkill[]): Promise<void> {
+  const registry: RegistryFile = {
+    version: 1,
+    skills: registrySkills.sort((a, b) => a.path.localeCompare(b.path)),
+  };
+  const registryPath = join(OUTPUT_DIR, "registry.json");
+
+  await mkdir(OUTPUT_DIR, { recursive: true });
+  await writeFile(registryPath, JSON.stringify(registry, null, 2) + "\n", "utf-8");
+  console.log(`Generated: ${registryPath}`);
+}
+
 async function copySkillMd(
   skillDir: string,
   templates: TemplateInfo[],
@@ -344,6 +433,7 @@ async function main(): Promise<void> {
   console.log("Building skills...\n");
 
   const skillDirs = await getSkillDirs();
+  const registrySkills: RegistrySkill[] = [];
   const existingOutputEntries = await readdir(OUTPUT_DIR, { withFileTypes: true }).catch(() => []);
 
   for (const entry of existingOutputEntries) {
@@ -354,13 +444,20 @@ async function main(): Promise<void> {
     }
   }
 
+  const registryPath = join(OUTPUT_DIR, "registry.json");
+  await rm(registryPath, { force: true });
+
   for (const skillDir of skillDirs) {
     const outputPath = join(OUTPUT_DIR, skillDir);
     await rm(outputPath, { recursive: true, force: true });
+    const skillInfo = await readSkillInfo(skillDir);
     const templates = await buildSkill(skillDir);
     const generalFiles = await copyGeneralMarkdownFiles(skillDir);
     await copySkillMd(skillDir, templates, generalFiles);
+    registrySkills.push(buildRegistrySkill(skillInfo, templates, generalFiles));
   }
+
+  await writeRegistry(registrySkills);
 
   console.log("\nDone!");
 }
