@@ -83,4 +83,5 @@ If you need more detailed information about Chroma beyond what's covered in this
 - [Data Model](./data-model.md) - An overview of how Chroma stores data
 - [Integrating Chroma into an existing system](./understanding-a-codebase.md) - Guidance for adding Chroma search to an existing application
 - [Chroma CLI](./cli.md) - Getting started with the Chroma CLI for Chroma Cloud authentication and database management
+- [Caching Collection References](./caching-collections.md) - Reduce repeated collection lookup requests in high-traffic Chroma Cloud applications
 - [Quotas and Limits](./quotas.md) - Chroma Cloud quotas and request limits
