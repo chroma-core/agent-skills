@@ -1,8 +1,9 @@
-import { readdir } from "node:fs/promises";
-import { join } from "node:path";
+import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
+import { join, relative } from "node:path";
 import { execSync } from "node:child_process";
 
-const SRC_DIR = "src";
+const OUTPUT_DIR = "skills";
+const TARGET_FILE_NAME = "python.md";
 
 interface ValidationResult {
   file: string;
@@ -10,61 +11,94 @@ interface ValidationResult {
   errors?: string;
 }
 
-async function getSkillDirs(): Promise<string[]> {
-  const entries = await readdir(SRC_DIR, { withFileTypes: true });
-  return entries.filter((e) => e.isDirectory()).map((e) => e.name);
-}
+async function getMarkdownFiles(dir: string): Promise<string[]> {
+  const entries = await readdir(dir, { withFileTypes: true });
+  const files: string[] = [];
 
-async function getPythonFiles(skillDir: string): Promise<string[]> {
-  const codeDir = join(SRC_DIR, skillDir, "code", "python");
-  try {
-    const entries = await readdir(codeDir);
-    return entries.filter((f) => f.endsWith(".py")).map((f) => join(codeDir, f));
-  } catch {
-    return [];
+  for (const entry of entries) {
+    const fullPath = join(dir, entry.name);
+
+    if (entry.isDirectory()) {
+      files.push(...(await getMarkdownFiles(fullPath)));
+      continue;
+    }
+
+    if (entry.isFile() && entry.name === TARGET_FILE_NAME) {
+      files.push(fullPath);
+    }
   }
+
+  return files;
 }
 
-function validateFile(filePath: string): ValidationResult {
+function extractCodeBlocks(content: string, language: string): string[] {
+  const blocks: string[] = [];
+  const pattern = new RegExp(`\\\`\\\`\\\`${language}\\n([\\s\\S]*?)\\n\\\`\\\`\\\``, "g");
+
+  let match: RegExpExecArray | null;
+  while ((match = pattern.exec(content)) !== null) {
+    blocks.push(match[1].trim());
+  }
+
+  return blocks;
+}
+
+async function validateMarkdownFile(markdownPath: string): Promise<ValidationResult> {
+  const content = await readFile(markdownPath, "utf-8");
+  const codeBlocks = extractCodeBlocks(content, "python");
+
+  if (codeBlocks.length === 0) {
+    return { file: markdownPath, success: true };
+  }
+
+  const tempRoot = join(process.cwd(), ".tmp");
+  await mkdir(tempRoot, { recursive: true });
+  const tempDir = await mkdtemp(join(tempRoot, "agent-skills-py-"));
+  const tempFile = join(tempDir, "example.py");
+  const combinedProgram = codeBlocks.join("\n\n");
+
   try {
-    // Check syntax with py_compile
-    execSync(`.venv/bin/python -m py_compile "${filePath}"`, {
+    await writeFile(tempFile, combinedProgram, "utf-8");
+    execSync(`.venv/bin/python -m py_compile "${tempFile}"`, {
       encoding: "utf-8",
       stdio: "pipe",
     });
 
-    return { file: filePath, success: true };
+    return { file: markdownPath, success: true };
   } catch (err: unknown) {
     const error = err as { stdout?: string; stderr?: string };
     const errorOutput = error.stderr || error.stdout || "Unknown error";
-    return { file: filePath, success: false, errors: errorOutput.trim() };
+    const normalizedOutput = errorOutput.split(tempFile).join(relative(process.cwd(), markdownPath));
+
+    return {
+      file: markdownPath,
+      success: false,
+      errors: normalizedOutput.trim(),
+    };
+  } finally {
+    await rm(tempDir, { recursive: true, force: true });
   }
 }
 
 async function main(): Promise<void> {
-  console.log("Validating Python code examples...\n");
+  console.log("Validating built Python code examples...\n");
 
-  const skillDirs = await getSkillDirs();
+  const mdFiles = await getMarkdownFiles(OUTPUT_DIR);
   const allResults: ValidationResult[] = [];
 
-  for (const skillDir of skillDirs) {
-    const pyFiles = await getPythonFiles(skillDir);
+  for (const file of mdFiles) {
+    console.log(`Checking: ${file}`);
+    const result = await validateMarkdownFile(file);
+    allResults.push(result);
 
-    for (const file of pyFiles) {
-      console.log(`Checking: ${file}`);
-      const result = validateFile(file);
-      allResults.push(result);
-
-      if (result.success) {
-        console.log(`  ✓ Valid\n`);
-      } else {
-        console.log(`  ✗ Errors found:\n${result.errors}\n`);
-      }
+    if (result.success) {
+      console.log("  ✓ Valid\n");
+    } else {
+      console.log(`  ✗ Errors found:\n${result.errors}\n`);
     }
   }
 
-  // Summary
-  const failed = allResults.filter((r) => !r.success);
+  const failed = allResults.filter((result) => !result.success);
   console.log("\n---");
   console.log(`Total files: ${allResults.length}`);
   console.log(`Passed: ${allResults.length - failed.length}`);
