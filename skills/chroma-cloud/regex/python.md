@@ -27,7 +27,7 @@ You can combine both: use regex to narrow results, then rank by semantic similar
 ```python
 import chromadb
 
-client = chromadb.HttpClient(host="localhost", port=8000)
+client = chromadb.CloudClient()
 collection = client.get_or_create_collection(name="my_collection")
 ```
 

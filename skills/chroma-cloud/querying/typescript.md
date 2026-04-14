@@ -22,10 +22,10 @@ Chroma provides two main methods for retrieving documents: `query` and `get`. Un
 ### Imports and boilerplate
 
 ```typescript
-import { ChromaClient, type IncludeEnum } from 'chromadb';
+import { CloudClient, type IncludeEnum } from 'chromadb';
 import { DefaultEmbeddingFunction } from '@chroma-core/default-embed';
 
-const client = new ChromaClient();
+const client = new CloudClient({});
 ```
 
 ### Basic query

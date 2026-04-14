@@ -10,10 +10,10 @@ Metadata in Chroma is structured key-value data stored alongside each document. 
 ### Imports and boilerplate
 
 ```typescript
-import { ChromaClient } from 'chromadb';
+import { CloudClient } from 'chromadb';
 import { DefaultEmbeddingFunction } from '@chroma-core/default-embed';
 
-const client = new ChromaClient();
+const client = new CloudClient({});
 const embeddingFunction = new DefaultEmbeddingFunction();
 ```
 

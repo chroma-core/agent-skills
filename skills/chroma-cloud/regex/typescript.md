@@ -26,9 +26,9 @@ You can combine both: use regex to narrow results, then rank by semantic similar
 
 ```typescript
 import { DefaultEmbeddingFunction } from '@chroma-core/default-embed';
-import { ChromaClient } from 'chromadb';
+import { CloudClient } from 'chromadb';
 
-const client = new ChromaClient();
+const client = new CloudClient({});
 const embedder = new DefaultEmbeddingFunction();
 
 const collection = await client.getOrCreateCollection({

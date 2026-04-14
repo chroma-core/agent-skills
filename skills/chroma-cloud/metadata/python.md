@@ -12,7 +12,7 @@ Metadata in Chroma is structured key-value data stored alongside each document. 
 ```python
 import chromadb
 
-client = chromadb.HttpClient(host="localhost", port=8000)
+client = chromadb.CloudClient()
 ```
 
 ### Filtering with `where`

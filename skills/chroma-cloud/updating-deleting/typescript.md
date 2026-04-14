@@ -18,10 +18,10 @@ Chroma provides `update`, `upsert`, and `delete` methods for modifying data afte
 ### Imports
 
 ```typescript
-import { ChromaClient } from 'chromadb';
+import { CloudClient } from 'chromadb';
 import { DefaultEmbeddingFunction } from '@chroma-core/default-embed';
 
-const client = new ChromaClient();
+const client = new CloudClient({});
 const embeddingFunction = new DefaultEmbeddingFunction();
 ```
 

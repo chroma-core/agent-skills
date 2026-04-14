@@ -4,7 +4,7 @@
   "scripts": {
     "build": "bun run scripts/build-skills.ts",
     "new": "bun run scripts/new-template.ts",
-    "validate": "bun run scripts/validate-typescript.ts && bun run scripts/validate-python.ts",
+    "validate": "bun run build && bun run scripts/validate-typescript.ts && bun run scripts/validate-python.ts",
     "validate:typescript": "bun run scripts/validate-typescript.ts",
     "validate:python": "bun run scripts/validate-python.ts"
   },

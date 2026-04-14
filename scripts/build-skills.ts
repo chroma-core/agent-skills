@@ -34,6 +34,38 @@ interface SkillConfig {
   sources?: string[];
 }
 
+function transformSharedSnippetsForSkill(
+  snippets: Map<string, string>,
+  skillDir: string,
+  templateSource: string,
+  language: Language
+): Map<string, string> {
+  if (skillDir !== "chroma-cloud" || templateSource !== "chroma-shared") {
+    return snippets;
+  }
+
+  const transformedSnippets = new Map<string, string>();
+
+  for (const [name, code] of snippets) {
+    transformedSnippets.set(name, transformSharedClientCode(code, language));
+  }
+
+  return transformedSnippets;
+}
+
+function transformSharedClientCode(code: string, language: Language): string {
+  if (language === "typescript") {
+    return code
+      .replace(/\bChromaClient\b/g, "CloudClient")
+      .replace(/new CloudClient\(\)/g, "new CloudClient({})");
+  }
+
+  return code.replace(
+    /chromadb\.HttpClient\(\s*host="localhost",\s*port=8000\s*\)/g,
+    "chromadb.CloudClient()"
+  );
+}
+
 function parseFrontmatter(content: string): { name: string; description: string } {
   const match = content.match(/^---\n([\s\S]*?)\n---/);
   if (!match) {
@@ -199,11 +231,16 @@ async function buildSkill(skillDir: string): Promise<TemplateInfo[]> {
     templateInfos.push({ name, description, fileName: topicName });
 
     for (const language of LANGUAGES) {
-      const snippets = await loadSnippets(
-        sources,
+      const snippets = transformSharedSnippetsForSkill(
+        await loadSnippets(
+          sources,
+          templateInfo.source,
+          language,
+          templateFile
+        ),
+        skillDir,
         templateInfo.source,
-        language,
-        templateFile
+        language
       );
       const output = replaceCodePlaceholders(
         template,
