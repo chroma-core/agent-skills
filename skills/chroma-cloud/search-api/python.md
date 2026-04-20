@@ -9,11 +9,12 @@ The Search API provides a fluent, composable interface for building complex quer
 
 **Note:** The Search API is only available on Chroma Cloud and is designed to work with Collection Schemas.
 
+The Search() API acts as both query() and get() because the search expression that is being passed in ultimately decides what type of query to issue.
+
 ### When to use Search() vs query()
 
 **Use `query()` when:**
 - You need simple semantic search
-- You're using local Chroma
 - You want the most straightforward API
 
 **Use `search()` when:**
@@ -24,7 +25,24 @@ The Search API provides a fluent, composable interface for building complex quer
 
 Note that the Search() class uses a builder pattern, so if you call a method on it, it does not mutate that instance, it returns a copy with that mutation, so it needs re-assignging to the variable that is referencing it.
 
-The `search()` method on a collection is able to take a single Search class instance or an arry of them, so rhe return value of the `search()` method on a collection is a SearchResult class, which has a `rows()` method, which will give you an array of array of results. So index 0 of the return value of `rows()` will be the array of the first Search class instance results.
+The `search()` method on a collection is able to take a single Search class instance or an arry of them, so the return value of the `search()` method on a collection is a SearchResult class, which has a `rows()` method, which will give you an array of array of results. So index 0 of the return value of `rows()` will be the array of the first Search class instance results.
+
+### Ranking and Scoring
+
+Ranking expressions score and order results. Lower scores = better matches (distance-based). When `rank` is omitted, results are returned in index/insertion order.
+
+Document inclusion rules when combining multiple `Knn` expressions:
+- A document must appear in at least one `Knn`'s top-`limit` results to be scored
+- It must also appear in every `Knn` where `default=None` (the default); otherwise it's excluded
+- Set a `default` value on a `Knn` to assign a fallback score for documents missing from its results, keeping them in the pool. This is usually what you want when combining multiple `Knn` expressions, otherwise the intersection rule often filters out too many candidates.
+
+Expressions support arithmetic (`+`, `-`, `*`, `/`, unary `-`) and math functions (`exp`, `log`, `abs`, `min`, `max`) for combining and transforming scores. Numbers are auto-converted to constants, or use `Val(x)` explicitly. A common pattern is a weighted sum like `Knn(query=q) * 0.7 + Knn(query=q, key="sparse_embedding") * 0.3` — but note this mixes two raw distance spaces, which may have very different scales. For robust hybrid ranking across dense + sparse, prefer RRF (below).
+
+Two limits to keep straight:
+- `Knn(limit=N)` — how many candidates that `Knn` scores (default 16). Raise it for better recall at the cost of latency.
+- `Search.limit(N)` — how many results are returned after ranking.
+
+For rank fusion (RRF), pass `return_rank=True` (Python) / `returnRank: true` (TypeScript) on each `Knn` so it emits rank positions (0, 1, 2…) instead of raw distances — see the Hybrid Search section below.
 
 ### Setup
 
